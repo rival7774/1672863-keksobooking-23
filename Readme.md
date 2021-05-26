@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг»
 
-* Студент: [Самир Китов](https://up.htmlacademy.ru/javascript/23/user/1672863).
-* Наставник: `Неизвестно`.
+- Студент: [Самир Китов](https://up.htmlacademy.ru/javascript/23/user/1672863).
+- Наставник: [Андрей Устименко](https://htmlacademy.ru/profile/spiritmoon).
 
 ---
 
