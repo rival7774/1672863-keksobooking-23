@@ -2,7 +2,6 @@
 const getRandomInRange = (min, max, number) => {
   let absMin = Math.abs(min);
   let absMax = Math.abs(max);
-  let theOutcome;
 
   if (absMin > absMax) {
     const temp = absMin;
@@ -10,34 +9,9 @@ const getRandomInRange = (min, max, number) => {
     absMax = temp;
   }
 
-  if (!number) {
-    theOutcome = Math.floor(Math.random() * (absMax - absMin + 1) + absMin);
-    return theOutcome;
-  }
+  const theOutcome = Math.random() * (absMax - absMin + 1) + absMin;
 
-  theOutcome = Math.random() * (absMax - absMin + 1) + absMin;
-  return theOutcome.toFixed(number);
+  return number ? theOutcome.toFixed(number) : Math.floor(theOutcome);
 };
 
-//!! ************************************************************************************
-
-const getRandomInRange1 = (min, max) => {
-  let absMin = Math.abs(min);
-  let absMax = Math.abs(max);
-
-  if (absMin > absMax) {
-    const temp = absMin;
-    absMin = absMax;
-    absMax = temp;
-  }
-
-  return Math.floor(Math.random() * (absMax - absMin + 1) + absMin);
-};
-
-const getRandomInRange2 = (min, max, number) => {
-  const theOutcome = getRandomInRange(min, max) + Math.random();
-
-  return theOutcome.toFixed(number);
-};
-
-getRandomInRange2(0, 10, 5);
+getRandomInRange(-100, -10, 2);
