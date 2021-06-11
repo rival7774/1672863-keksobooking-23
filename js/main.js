@@ -40,9 +40,8 @@ const typeOfHousing = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const time = ['12:00', '13:00', '14:00'];
 const comfort = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
 const foto = ['https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/duonguyen-8LrGtIxxa4w.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/brandon-hoogenboom-SNxQGWxZQi0.jpg', 'https://assets.htmlacademy.ru/content/intensive/javascript-1/keksobooking/claire-rendall-b6kAwr1i0Iw.jpg'];
-const randomAvatar = `img/avatars/user0${  getRandomInRange(1, 8)  }.png`;
 
-const getRandomLengthArray = (arr) => {
+const getRandomArray = (arr) => {
   const array = Array.from({length: getRandomInRange(1, arr.length)});
 
   let index = 0;
@@ -60,7 +59,7 @@ const getRandomLengthArray = (arr) => {
 const getRandomAds = () => {
   const object = {
     author: {
-      avatar: randomAvatar,
+      avatar: `img/avatars/user0${  getRandomInRange(1, 8)  }.png`,
     },
     offer: {
       title: 'Шикарные апортаменты',
@@ -71,9 +70,9 @@ const getRandomAds = () => {
       guests: getRandomInRange(1, 20),
       checkin: time[getRandomInRange(0, time.length - 1)],
       checkout: time[getRandomInRange(0, time.length - 1)],
-      features: getRandomLengthArray(comfort),
+      features: getRandomArray(comfort),
       description: 'описание помещения',
-      photos: getRandomLengthArray(foto),
+      photos: getRandomArray(foto),
     },
     location: {
       lat: getRandomInRange(35.65000, 35.70000, 5),
@@ -86,18 +85,12 @@ const getRandomAds = () => {
 const NUMBER_OF_ADS = 10;
 
 const getArrayOfDeclarations = (numberOfAds) => {
-  // const array = Array.from({length: numberOfAds}).fill(1);
+  const array = Array.from({length: numberOfAds});
 
-  // for (let index = 0; index < numberOfAds; index++) {
-  //   array[index] = getRandomAds();
-  // }
-
-  // array.forEach((element, index) => {
-  //   array[index] = getRandomAds();
-  // });
-  // return array;
-
-  return new Array(numberOfAds).fill('1').map(() => getRandomAds());
+  array.forEach((element, i) => {
+    array[i] = getRandomAds();
+  });
+  return array;
 };
 
-console.log(getArrayOfDeclarations(NUMBER_OF_ADS));
+getArrayOfDeclarations(NUMBER_OF_ADS);
