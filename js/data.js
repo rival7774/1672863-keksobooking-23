@@ -19,7 +19,7 @@ const getRandomAds = () => ({
     checkin: time[getRandomInRange(0, time.length - 1)],
     checkout: time[getRandomInRange(0, time.length - 1)],
     features: getRandomValueArray(comfort),
-    description: 'описание помещения',
+    description: 'Прекрасное описание',
     photos: getRandomValueArray(foto),
   },
   location: {
