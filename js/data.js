@@ -30,9 +30,22 @@ const getRandomAds = () => ({
 
 const template = document.querySelector('#card').content;
 
-const setVisible = (elem, condition) => {
-  elem.hidden = condition;
-  return elem;
+const setVisible = (elem) => {
+  elem.classList.add('hidden');
+};
+
+const bringFeaturesToThePage = (arrayFeatures, insertIntoElement) => {
+  arrayFeatures.forEach((elem) => {
+    insertIntoElement.insertAdjacentHTML('beforeend', `<li class="popup__feature popup__feature--${elem}"></li>`);
+  });
+};
+
+const replaceSrcPhotos = (arrayPhotos, insertIntoElement, photo) => {
+  arrayPhotos.forEach((value) => {
+    const elem = photo.cloneNode(false);
+    elem.src = value;
+    insertIntoElement.appendChild(elem);
+  });
 };
 
 const translation = {
@@ -62,77 +75,71 @@ const getGeneratedAd = (obj) => {
   if (obj.offer.title) {
     title.textContent = obj.offer.title;
   }else {
-    setVisible(title, true);
+    setVisible(title);
   }
 
   if (obj.offer.address) {
     address.textContent = obj.offer.address;
   }else {
-    setVisible(address, true);
+    setVisible(address);
   }
 
   if (obj.offer.price) {
     price.innerHTML = `${obj.offer.price} <span>₽/ночь</span>`;
   }else {
-    setVisible(price, true);
+    setVisible(price);
   }
 
   if (obj.offer.type) {
     type.textContent = translation[obj.offer.type];
   }else {
-    setVisible(type, true);
+    setVisible(type);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity, true);
+    setVisible(capacity);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity, true);
+    setVisible(capacity);
   }
 
   if (obj.offer.checkin && obj.offer.checkout) {
     timeText.textContent = `Заезд после ${obj.offer.checkin}, выезд до ${obj.offer.checkout}`;
   }else {
-    setVisible(timeText, true);
+    setVisible(timeText);
   }
 
   if (obj.offer.features) {
     featuresPopup.innerHTML = '';
-    obj.offer.features.forEach((elem) => {
-      featuresPopup.insertAdjacentHTML('beforeend', `<li class="popup__feature popup__feature--${elem}"></li>`);
-    });
+    bringFeaturesToThePage(obj.offer.features, featuresPopup);
   }else {
-    setVisible(featuresPopup, true);
+    setVisible(featuresPopup);
   }
 
   if (obj.offer.description) {
     description.textContent = obj.offer.description;
   }else {
-    setVisible(description, true);
+    setVisible(description);
   }
 
   if (obj.offer.photos) {
     photos.innerHTML = '';
 
-    obj.offer.photos.forEach((value) => {
-      const elem = photo.cloneNode(false);
-      elem.src = value;
-      photos.appendChild(elem);
-    });
+    replaceSrcPhotos(obj.offer.photos, photos, photo);
   }else {
     photos.style = 'display : none !important';
-    setVisible(photos, true);
+    setVisible(photos);
   }
 
   if (obj.author.avatar) {
     avatar.src = obj.author.avatar;
   }else {
-    setVisible(avatar, true);
+    setVisible(avatar);
   }
 
   return element;
