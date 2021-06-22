@@ -2,6 +2,7 @@ const announcementForm = document.querySelector('.ad-form');
 const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
 const filterForm = document.querySelector('.map__filters');
 const filterFormFieldset = filterForm.querySelectorAll('fieldset');
+const formTitle = announcementForm.querySelector('#title');
 
 const DISABL_CSS_FORM = 'ad-form--disabled';
 
@@ -15,12 +16,33 @@ const disabledFieldset = (allFildset) => {
   });
 };
 
-disabledForm(announcementForm, DISABL_CSS_FORM);
-disabledFieldset(announcementFormFieldset);
+// disabledForm(announcementForm, DISABL_CSS_FORM);
+// disabledFieldset(announcementFormFieldset);
 
-disabledForm(filterForm, DISABL_CSS_FORM);
-disabledFieldset(filterFormFieldset);
+// disabledForm(filterForm, DISABL_CSS_FORM);
+// disabledFieldset(filterFormFieldset);
 
-// Форма заполнения информации об объявлении .ad-form содержит класс ad-form--disabled;
-// Все интерактивные элементы формы .ad-form должны быть заблокированы с помощью атрибута disabled, добавленного на них или на их родительские блоки fieldset;
-// Форма с фильтрами .map__filters заблокирована так же, как и форма .ad-form — на форму добавлен специальный класс, а на её интерактивные элементы атрибуты disabled;
+const validiti = (input, event) => {
+
+  input.addEventListener(event, (evt) => {
+    const validities = [];
+
+    if (input.validity.tooShort) {
+      validities.push(`Поле должно содержать минимум ${input.minlength} символов \n Сейчас у вас введенно ${input.value.length} символ \n Осталось ввести ${20 - input.value.length}`);
+    }
+
+    if (input.validity.tooLong) {
+      validities.push('Поле должно содержать максимум 100 символов');
+    }
+
+    input.setCustomValidity(validities.join('. \n'));
+
+    input.reportValidity();
+  });
+
+};
+const aaa = [formTitle];
+
+console.log(aaa);
+console.log(formTitle.minlength.nodeValue);
+validiti(formTitle, 'input');
