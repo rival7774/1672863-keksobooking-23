@@ -28,24 +28,26 @@ const getRandomAds = () => ({
   },
 });
 
-const template = document.querySelector('#card').content;
-
-const setVisible = (elem) => {
+const hideElement = (elem) => {
   elem.classList.add('hidden');
 };
 
-const bringFeaturesToThePage = (arrayFeatures, insertIntoElement) => {
+const createElementFeatures = (arrayFeatures, insertIntoElement) => {
   arrayFeatures.forEach((elem) => {
     insertIntoElement.insertAdjacentHTML('beforeend', `<li class="popup__feature popup__feature--${elem}"></li>`);
   });
 };
 
-const replaceSrcPhotos = (arrayPhotos, insertIntoElement, photo) => {
-  arrayPhotos.forEach((value) => {
-    const elem = photo.cloneNode(false);
+const createPhotos = (arraySrc, photoElement) => {
+  const allPhoto = document.createDocumentFragment();
+
+  arraySrc.forEach((value) => {
+    const elem = photoElement.cloneNode(false);
     elem.src = value;
-    insertIntoElement.appendChild(elem);
+    allPhoto.appendChild(elem);
   });
+
+  return allPhoto;
 };
 
 const translation = {
@@ -57,6 +59,7 @@ const translation = {
 };
 
 const getGeneratedAd = (obj) => {
+  const template = document.querySelector('#card').content;
   const popup = template.querySelector('.popup');
   const element = popup.cloneNode(true);
 
@@ -75,71 +78,69 @@ const getGeneratedAd = (obj) => {
   if (obj.offer.title) {
     title.textContent = obj.offer.title;
   }else {
-    setVisible(title);
+    hideElement(title);
   }
 
   if (obj.offer.address) {
     address.textContent = obj.offer.address;
   }else {
-    setVisible(address);
+    hideElement(address);
   }
 
   if (obj.offer.price) {
     price.innerHTML = `${obj.offer.price} <span>₽/ночь</span>`;
   }else {
-    setVisible(price);
+    hideElement(price);
   }
 
   if (obj.offer.type) {
     type.textContent = translation[obj.offer.type];
   }else {
-    setVisible(type);
+    hideElement(type);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity);
+    hideElement(capacity);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity);
+    hideElement(capacity);
   }
 
   if (obj.offer.checkin && obj.offer.checkout) {
     timeText.textContent = `Заезд после ${obj.offer.checkin}, выезд до ${obj.offer.checkout}`;
   }else {
-    setVisible(timeText);
+    hideElement(timeText);
   }
 
   if (obj.offer.features) {
     featuresPopup.innerHTML = '';
-    bringFeaturesToThePage(obj.offer.features, featuresPopup);
+    createElementFeatures(obj.offer.features, featuresPopup);
   }else {
-    setVisible(featuresPopup);
+    hideElement(featuresPopup);
   }
 
   if (obj.offer.description) {
     description.textContent = obj.offer.description;
   }else {
-    setVisible(description);
+    hideElement(description);
   }
 
   if (obj.offer.photos) {
     photos.innerHTML = '';
-
-    replaceSrcPhotos(obj.offer.photos, photos, photo);
+    photos.appendChild(createPhotos(obj.offer.photos, photo));
   }else {
-    photos.style = 'display : none !important';
-    setVisible(photos);
+    hideElement(photos);
   }
 
   if (obj.author.avatar) {
     avatar.src = obj.author.avatar;
   }else {
-    setVisible(avatar);
+    hideElement(avatar);
   }
 
   return element;

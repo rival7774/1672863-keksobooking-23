@@ -22,27 +22,28 @@ const disabledFieldset = (allFildset) => {
 // disabledForm(filterForm, DISABL_CSS_FORM);
 // disabledFieldset(filterFormFieldset);
 
-const validiti = (input, event) => {
+const validityInpytText = (evt) => {
+  const input = evt.target;
+  const validities = [];
 
-  input.addEventListener(event, (evt) => {
-    const validities = [];
+  if (input.validity.tooShort) {
+    validities.push(`Поле должно содержать минимум ${input.getAttribute('minlength')} символов \n Сейчас у вас введенно ${input.value.length} символ \n Осталось ввести ${input.getAttribute('minlength') - input.value.length}`);
+  }
 
-    if (input.validity.tooShort) {
-      validities.push(`Поле должно содержать минимум ${input.minlength} символов \n Сейчас у вас введенно ${input.value.length} символ \n Осталось ввести ${20 - input.value.length}`);
-    }
+  if (input.validity.tooLong) {
+    validities.push(`Поле должно содержать максимум 100 символов \n Сейчас у вас введенно ${input.value.length} символ \n Нужно удалить ${input.value.length - input.getAttribute('maxlength')}`);
+  }
 
-    if (input.validity.tooLong) {
-      validities.push('Поле должно содержать максимум 100 символов');
-    }
+  if (input.validity.valueMissing) {
+    validities.push('Заполните пожалуйста это поле');
+  }
 
-    input.setCustomValidity(validities.join('. \n'));
+  input.setCustomValidity(validities.join('. \n'));
 
-    input.reportValidity();
-  });
-
+  input.reportValidity();
 };
-const aaa = [formTitle];
 
-console.log(aaa);
-console.log(formTitle.minlength.nodeValue);
-validiti(formTitle, 'input');
+formTitle.addEventListener('input', validityInpytText);
+
+// console.log(aaa);
+// console.log(formTitle);
