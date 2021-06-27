@@ -1,4 +1,7 @@
-import {getRandomValueArray, getRandomInRange} from './util.js';
+import {getRandomValueArray, getRandomInRange, getArrayOfDeclarations} from './util.js';
+
+const mapCanvas = document.querySelector('#map-canvas');
+const NUMBER_OF_ADS = 10;
 
 const typeOfHousing = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const time = ['12:00', '13:00', '14:00'];
@@ -32,9 +35,16 @@ const hideElement = (elem) => {
   elem.classList.add('hidden');
 };
 
-const createElementFeatures = (arrayFeatures, insertIntoElement) => {
+const createElementFeature = (endClass) => {
+  const elem = document.createElement('li');
+  elem.classList.add('popup__feature', `popup__feature--${endClass}`);
+  return elem;
+};
+
+const insertElementFeatures = (arrayFeatures, insertIntoElement) => {
   arrayFeatures.forEach((elem) => {
-    insertIntoElement.insertAdjacentHTML('beforeend', `<li class="popup__feature popup__feature--${elem}"></li>`);
+    const feature = createElementFeature(elem);
+    insertIntoElement.appendChild(feature);
   });
 };
 
@@ -119,7 +129,7 @@ const getGeneratedAd = (obj) => {
 
   if (obj.offer.features) {
     featuresPopup.innerHTML = '';
-    createElementFeatures(obj.offer.features, featuresPopup);
+    insertElementFeatures(obj.offer.features, featuresPopup);
   }else {
     hideElement(featuresPopup);
   }
@@ -145,5 +155,9 @@ const getGeneratedAd = (obj) => {
 
   return element;
 };
+
+const ads = getArrayOfDeclarations(NUMBER_OF_ADS);
+
+mapCanvas.appendChild(getGeneratedAd(ads[0]));
 
 export {getRandomAds, getGeneratedAd};
