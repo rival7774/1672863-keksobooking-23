@@ -1,4 +1,7 @@
-import {getRandomValueArray, getRandomInRange} from './util.js';
+import {getRandomValueArray, getRandomInRange, getArrayOfDeclarations} from './util.js';
+
+const mapCanvas = document.querySelector('#map-canvas');
+const NUMBER_OF_ADS = 10;
 
 const typeOfHousing = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const time = ['12:00', '13:00', '14:00'];
@@ -28,11 +31,33 @@ const getRandomAds = () => ({
   },
 });
 
-const template = document.querySelector('#card').content;
+const hideElement = (elem) => {
+  elem.classList.add('hidden');
+};
 
-const setVisible = (elem, condition) => {
-  elem.hidden = condition;
+const createElementFeature = (endClass) => {
+  const elem = document.createElement('li');
+  elem.classList.add('popup__feature', `popup__feature--${endClass}`);
   return elem;
+};
+
+const insertElementFeatures = (arrayFeatures, insertIntoElement) => {
+  arrayFeatures.forEach((elem) => {
+    const feature = createElementFeature(elem);
+    insertIntoElement.appendChild(feature);
+  });
+};
+
+const createPhotos = (arraySrc, photoElement) => {
+  const allPhoto = document.createDocumentFragment();
+
+  arraySrc.forEach((value) => {
+    const elem = photoElement.cloneNode(false);
+    elem.src = value;
+    allPhoto.appendChild(elem);
+  });
+
+  return allPhoto;
 };
 
 const translation = {
@@ -44,6 +69,7 @@ const translation = {
 };
 
 const getGeneratedAd = (obj) => {
+  const template = document.querySelector('#card').content;
   const popup = template.querySelector('.popup');
   const element = popup.cloneNode(true);
 
@@ -62,80 +88,76 @@ const getGeneratedAd = (obj) => {
   if (obj.offer.title) {
     title.textContent = obj.offer.title;
   }else {
-    setVisible(title, true);
+    hideElement(title);
   }
 
   if (obj.offer.address) {
     address.textContent = obj.offer.address;
   }else {
-    setVisible(address, true);
+    hideElement(address);
   }
 
   if (obj.offer.price) {
     price.innerHTML = `${obj.offer.price} <span>₽/ночь</span>`;
   }else {
-    setVisible(price, true);
+    hideElement(price);
   }
 
   if (obj.offer.type) {
     type.textContent = translation[obj.offer.type];
   }else {
-    setVisible(type, true);
+    hideElement(type);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity, true);
+    hideElement(capacity);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
   }else {
-    setVisible(capacity, true);
+    hideElement(capacity);
   }
 
   if (obj.offer.checkin && obj.offer.checkout) {
     timeText.textContent = `Заезд после ${obj.offer.checkin}, выезд до ${obj.offer.checkout}`;
   }else {
-    setVisible(timeText, true);
+    hideElement(timeText);
   }
 
   if (obj.offer.features) {
     featuresPopup.innerHTML = '';
-    obj.offer.features.forEach((elem) => {
-      featuresPopup.insertAdjacentHTML('beforeend', `<li class="popup__feature popup__feature--${elem}"></li>`);
-    });
+    insertElementFeatures(obj.offer.features, featuresPopup);
   }else {
-    setVisible(featuresPopup, true);
+    hideElement(featuresPopup);
   }
 
   if (obj.offer.description) {
     description.textContent = obj.offer.description;
   }else {
-    setVisible(description, true);
+    hideElement(description);
   }
 
   if (obj.offer.photos) {
     photos.innerHTML = '';
-
-    obj.offer.photos.forEach((value) => {
-      const elem = photo.cloneNode(false);
-      elem.src = value;
-      photos.appendChild(elem);
-    });
+    photos.appendChild(createPhotos(obj.offer.photos, photo));
   }else {
-    photos.style = 'display : none !important';
-    setVisible(photos, true);
+    hideElement(photos);
   }
 
   if (obj.author.avatar) {
     avatar.src = obj.author.avatar;
   }else {
-    setVisible(avatar, true);
+    hideElement(avatar);
   }
 
   return element;
 };
+
+const ads = getArrayOfDeclarations(NUMBER_OF_ADS);
+
+mapCanvas.appendChild(getGeneratedAd(ads[0]));
 
 export {getRandomAds, getGeneratedAd};

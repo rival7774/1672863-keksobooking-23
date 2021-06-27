@@ -37,6 +37,10 @@
           box-sizing: content-box;
 }
 
+.hidden {
+  display: none !important;
+}
+
 body {
   max-width: 1200px;
   min-width: 1000px;
@@ -55,6 +59,8 @@ fieldset {
 
   border: 0;
 }
+
+
 
 
 /* Карта с объявлениями
