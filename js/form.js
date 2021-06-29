@@ -86,8 +86,8 @@ const validityTitle = (evt) => {
 
 formTitle.addEventListener('input', validityTitle);
 
+let MIN_VALUE_PRICE = Number(roomTypeOption);
 const MAX_VALUE_PRICE = 1000000;
-const MIN_VALUE_PRICE = Number(roomTypeOption);
 
 const validityPrice = (evt) => {
   const target = evt.target;
@@ -95,7 +95,7 @@ const validityPrice = (evt) => {
   const validities = [];
 
   if (!minValue(targetValue, MIN_VALUE_PRICE)) {
-    validities.push(`Минимальная цена ${MIN_VALUE_PRICE}р.\nСейчас ваша цена ${targetValue}р.`);
+    validities.push(`Минимальная цена ${aaa[roomType.value]}р.\nСейчас ваша цена ${targetValue}р.`);
   }
 
   if (!maxValue(targetValue, MAX_VALUE_PRICE)) {
@@ -115,22 +115,42 @@ formPrice.addEventListener('input', validityPrice);
 
 //********Синхронизация количества комнат с количеством мест */
 
-for (let i = 0; i < numberOfGuests.options.length; i++) {
-  if (numberOfRooms.options[numberOfRooms.selectedIndex].value === numberOfGuests.options[i].value) {
-    numberOfGuests.selectedIndex = i;
-  }else {
-    numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
-  }
-}
+// if (numberOfRooms.options[numberOfRooms.selectedIndex] === numberOfRooms.options[numberOfRooms.options.length - 1]) {
+//   numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
+// }else {
+//   numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
+// }
+
+// for (let i = 0; i < numberOfGuests.options.length; i++) {
+//   const valueRoom = Number(numberOfRooms.options[numberOfRooms.selectedIndex].value);
+//   const valueGuests = Number(numberOfGuests.options[i].value);
+
+//   if (numberOfRooms.options[numberOfRooms.selectedIndex] === numberOfRooms.options[numberOfRooms.options.length - 1]) {
+//     numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
+//     for (let k = 0; k < numberOfGuests.options.length; k++) {
+//       numberOfGuests.options[k].disabled = true;
+//     }
+//     numberOfGuests.options[numberOfGuests.selectedIndex].disabled = false;
+//     break;
+//   }
+
+//   if (valueRoom >= valueGuests && valueGuests !== 0) {
+//     numberOfGuests.options[i].disabled = false;
+//     numberOfGuests.selectedIndex = i;
+//   }else {
+//     numberOfGuests.options[i].disabled = true;
+//   }
+// }
+
+// numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
 
 numberOfRooms.addEventListener('change', () => {
-
   for (let i = 0; i < numberOfGuests.options.length; i++) {
     const valueRoom = Number(numberOfRooms.options[numberOfRooms.selectedIndex].value);
     const valueGuests = Number(numberOfGuests.options[i].value);
 
-    if (numberOfRooms.options[numberOfRooms.selectedIndex] === numberOfRooms.options[numberOfRooms.options.length - 1]) {
-      numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
+    if (Number(numberOfRooms.value) === 100) { //!!Завести константу 100
+      numberOfGuests.value = 100;  //!! Найти идндекс
       for (let k = 0; k < numberOfGuests.options.length; k++) {
         numberOfGuests.options[k].disabled = true;
       }
@@ -138,19 +158,14 @@ numberOfRooms.addEventListener('change', () => {
       return;
     }
 
-    if (valueRoom >= valueGuests && valueGuests !== 0) {
+    if (valueRoom >= valueGuests && valueGuests !== 100) {
       numberOfGuests.options[i].disabled = false;
-      numberOfGuests.selectedIndex = i;
     }else {
       numberOfGuests.options[i].disabled = true;
     }
   }
 
-  for (let i = 0; i < numberOfGuests.options.length; i++) {
-    if (numberOfRooms.options[numberOfRooms.selectedIndex].value === numberOfGuests.options[i].value) {
-      numberOfGuests.selectedIndex = i;
-    }
-  }
+  numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
 });
 
 //*******Влияние типа желья на минимальную цену за ночь */
@@ -162,14 +177,14 @@ roomType.addEventListener('change', () => {
   const valueData = roomType.options[roomType.selectedIndex].dataset.minPrice;
   formPrice.min = valueData;
   formPrice.placeholder = valueData;
+  MIN_VALUE_PRICE = valueData;
 });
 
 //********Синхронизация времени заезда и выезда */
 
-const synchronizeTime = (evt, selectTime) => {
-  const target = evt.target;
-  selectTime.selectedIndex = target.selectedIndex;
+const synchronizeTime = (target, selectTime) => {
+  selectTime.value = target.value;
 };
 
-checkInTime.addEventListener('change', (evt) => synchronizeTime(evt, checkOutTime));
-checkOutTime.addEventListener('change', (evt) => synchronizeTime(evt, checkInTime));
+checkInTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkOutTime));
+checkOutTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkInTime));
