@@ -86,7 +86,7 @@ const validityTitle = (evt) => {
 
 formTitle.addEventListener('input', validityTitle);
 
-let MIN_VALUE_PRICE = Number(roomTypeOption);
+let minValuePrice = Number(roomTypeOption);
 const MAX_VALUE_PRICE = 1000000;
 
 const validityPrice = (evt) => {
@@ -94,8 +94,8 @@ const validityPrice = (evt) => {
   const targetValue = Number(target.value);
   const validities = [];
 
-  if (!minValue(targetValue, MIN_VALUE_PRICE)) {
-    validities.push(`Минимальная цена ${aaa[roomType.value]}р.\nСейчас ваша цена ${targetValue}р.`);
+  if (!minValue(targetValue, minValuePrice)) {
+    validities.push(`Минимальная цена ${minValuePrice}р.\nСейчас ваша цена ${targetValue}р.`);
   }
 
   if (!maxValue(targetValue, MAX_VALUE_PRICE)) {
@@ -115,58 +115,29 @@ formPrice.addEventListener('input', validityPrice);
 
 //********Синхронизация количества комнат с количеством мест */
 
-// if (numberOfRooms.options[numberOfRooms.selectedIndex] === numberOfRooms.options[numberOfRooms.options.length - 1]) {
-//   numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
-// }else {
-//   numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
-// }
+const MAX_VALUE = 100;
 
-// for (let i = 0; i < numberOfGuests.options.length; i++) {
-//   const valueRoom = Number(numberOfRooms.options[numberOfRooms.selectedIndex].value);
-//   const valueGuests = Number(numberOfGuests.options[i].value);
+const validityGuests = () => {
+  const roomValue = Number(numberOfRooms.value);
 
-//   if (numberOfRooms.options[numberOfRooms.selectedIndex] === numberOfRooms.options[numberOfRooms.options.length - 1]) {
-//     numberOfGuests.selectedIndex = numberOfGuests.options.length - 1;
-//     for (let k = 0; k < numberOfGuests.options.length; k++) {
-//       numberOfGuests.options[k].disabled = true;
-//     }
-//     numberOfGuests.options[numberOfGuests.selectedIndex].disabled = false;
-//     break;
-//   }
-
-//   if (valueRoom >= valueGuests && valueGuests !== 0) {
-//     numberOfGuests.options[i].disabled = false;
-//     numberOfGuests.selectedIndex = i;
-//   }else {
-//     numberOfGuests.options[i].disabled = true;
-//   }
-// }
-
-// numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
-
-numberOfRooms.addEventListener('change', () => {
   for (let i = 0; i < numberOfGuests.options.length; i++) {
-    const valueRoom = Number(numberOfRooms.options[numberOfRooms.selectedIndex].value);
-    const valueGuests = Number(numberOfGuests.options[i].value);
+    const guestsValue = Number(numberOfGuests.options[i].value);
 
-    if (Number(numberOfRooms.value) === 100) { //!!Завести константу 100
-      numberOfGuests.value = 100;  //!! Найти идндекс
-      for (let k = 0; k < numberOfGuests.options.length; k++) {
-        numberOfGuests.options[k].disabled = true;
-      }
-      numberOfGuests.options[numberOfGuests.selectedIndex].disabled = false;
-      return;
-    }
-
-    if (valueRoom >= valueGuests && valueGuests !== 100) {
+    if (roomValue >= guestsValue && roomValue !== MAX_VALUE) {
       numberOfGuests.options[i].disabled = false;
+    }else if (roomValue === MAX_VALUE && guestsValue === MAX_VALUE) {
+      numberOfGuests.options[i].disabled = guestsValue !== MAX_VALUE;
     }else {
       numberOfGuests.options[i].disabled = true;
     }
   }
 
-  numberOfGuests.value = numberOfRooms.options[numberOfRooms.selectedIndex].value;
-});
+  numberOfGuests.value = numberOfRooms.value;
+};
+
+validityGuests();
+
+numberOfRooms.addEventListener('change', validityGuests);
 
 //*******Влияние типа желья на минимальную цену за ночь */
 
@@ -177,7 +148,7 @@ roomType.addEventListener('change', () => {
   const valueData = roomType.options[roomType.selectedIndex].dataset.minPrice;
   formPrice.min = valueData;
   formPrice.placeholder = valueData;
-  MIN_VALUE_PRICE = valueData;
+  minValuePrice = valueData;
 });
 
 //********Синхронизация времени заезда и выезда */
