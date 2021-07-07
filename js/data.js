@@ -65,7 +65,7 @@ const translation = {
   hotel:'Отель',
 };
 
-const getGeneratedAd = (obj) => {
+const getAd = (obj) => {
   const template = document.querySelector('#card').content;
   const popup = template.querySelector('.popup');
   const element = popup.cloneNode(true);
@@ -153,4 +153,4 @@ const getGeneratedAd = (obj) => {
   return element;
 };
 
-export {getRandomAds, getGeneratedAd};
+export {getRandomAds, getAd};

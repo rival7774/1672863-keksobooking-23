@@ -1,5 +1,5 @@
 import {blockForms, unlockForms, changeAddress} from './form.js';
-import {getGeneratedAd} from './data.js';
+import {getAd} from './data.js';
 import {getArrayOfDeclarations} from './util.js';
 
 const mymap = L.map('map-canvas')
@@ -19,7 +19,7 @@ L.tileLayer(
   },
 ).addTo(mymap);
 
-const getGroupMarkers = (marker, group) => {
+const addMarkerToGroup = (marker, group) => {
   marker.addTo(group);
 };
 
@@ -45,15 +45,25 @@ const createSimilarMarker = ({urlIcon, size, anchor, draggable, lat, lng}) => {
   return marker;
 };
 
+const AMOUNTOFNUMBERS = 5;
+
 const getAddress = (marker) => {
-  const lat = marker.getLatLng().lat.toFixed(5);
-  const lng = marker.getLatLng().lng.toFixed(5);
+  const lat = marker.getLatLng().lat.toFixed(AMOUNTOFNUMBERS);
+  const lng = marker.getLatLng().lng.toFixed(AMOUNTOFNUMBERS);
 
   return `Широта - ${lat}, высота - ${lng}`;
 };
 //!!!Найти критерий по именованию событий
 
-const mainMarker = createSimilarMarker({urlIcon: '../img/main-pin.svg', size: [52, 52], anchor: [26, 52], draggable: true, lat: 35.6894, lng: 139.692}).addTo(mymap);
+const mainMarker = createSimilarMarker(
+  {
+    urlIcon: '../img/main-pin.svg',
+    size: [52, 52],
+    anchor: [26, 52],
+    draggable: true,
+    lat: 35.6894,
+    lng: 139.692,
+  }).addTo(mymap);
 
 changeAddress(getAddress(mainMarker));
 
@@ -62,7 +72,9 @@ mainMarker.on('move', (evt) => {
   changeAddress(address);
 });
 
-const ads = getArrayOfDeclarations(10);
+const NUMBEROFOBJECTS = 10;
+
+const ads = getArrayOfDeclarations(NUMBEROFOBJECTS);
 
 const markerGroup = L.layerGroup().addTo(mymap);
 
@@ -79,8 +91,8 @@ ads.forEach((obj) => {
   };
 
   const marker = createSimilarMarker(regularMarker);
-  marker.bindPopup(getGeneratedAd(obj)).openPopup();
-  getGroupMarkers(marker, markerGroup);
+  marker.bindPopup(getAd(obj)).openPopup();
+  addMarkerToGroup(marker, markerGroup);
 });
 
-export {createSimilarMarker, getGroupMarkers, mymap};
+export {createSimilarMarker, addMarkerToGroup, mymap};
