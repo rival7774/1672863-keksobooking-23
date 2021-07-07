@@ -1,7 +1,4 @@
-import {getRandomValueArray, getRandomInRange, getArrayOfDeclarations} from './util.js';
-
-const mapCanvas = document.querySelector('#map-canvas');
-const NUMBER_OF_ADS = 10;
+import {getRandomValueArray, getRandomInRange} from './util.js';
 
 const typeOfHousing = ['palace', 'flat', 'house', 'bungalow', 'hotel'];
 const time = ['12:00', '13:00', '14:00'];
@@ -155,9 +152,5 @@ const getGeneratedAd = (obj) => {
 
   return element;
 };
-
-const ads = getArrayOfDeclarations(NUMBER_OF_ADS);
-
-mapCanvas.appendChild(getGeneratedAd(ads[0]));
 
 export {getRandomAds, getGeneratedAd};

@@ -9,6 +9,7 @@ const numberOfRooms = document.querySelector('#room_number');
 const numberOfGuests = document.querySelector('#capacity');
 const checkInTime = document.querySelector('#timein');
 const checkOutTime = document.querySelector('#timeout');
+const address = document.querySelector('#address');
 
 const roomTypeOption = Number(roomType.options[roomType.selectedIndex].dataset.minPrice);
 
@@ -53,7 +54,6 @@ const unlockForms = () => {
 };
 
 blockForms();
-unlockForms();
 
 //*******Валидация заголовка и цены за ночь */
 
@@ -159,3 +159,11 @@ const synchronizeTime = (target, selectTime) => {
 
 checkInTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkOutTime));
 checkOutTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkInTime));
+
+//*********dhfghsjodgvsx */
+
+const changeAddress = (stringAddress) => {
+  address.value = stringAddress;
+};
+
+export {blockForms, unlockForms, changeAddress};
