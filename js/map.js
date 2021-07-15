@@ -1,6 +1,8 @@
-import {blockForms, unlockForms, changeAddress} from './form.js';
+import {unlockForms, changeAddress} from './form.js';
 import {getAd} from './data.js';
-import {getArrayOfDeclarations} from './util.js';
+import {getAds} from './api.js';
+
+//******Создание карты */
 
 const mymap = L.map('map-canvas')
   .on('load', () => {
@@ -18,6 +20,8 @@ L.tileLayer(
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
 ).addTo(mymap);
+
+//*****Создание маркеров */
 
 const addMarkerToGroup = (marker, group) => {
   marker.addTo(group);
@@ -45,6 +49,8 @@ const createSimilarMarker = ({urlIcon, size, anchor, draggable, lat, lng}) => {
   return marker;
 };
 
+//*****Получение координат */
+
 const AMOUNTOFNUMBERS = 5;
 
 const getAddress = (marker) => {
@@ -53,7 +59,11 @@ const getAddress = (marker) => {
 
   return `Широта - ${lat}, высота - ${lng}`;
 };
-//!!!Найти критерий по именованию событий
+
+//*****Главный маркер */
+
+const LAT_CENTER_TOKIO = 35.6894;
+const LNG_CENTER_TOKIO = 139.692;
 
 const mainMarker = createSimilarMarker(
   {
@@ -61,38 +71,46 @@ const mainMarker = createSimilarMarker(
     size: [52, 52],
     anchor: [26, 52],
     draggable: true,
-    lat: 35.6894,
-    lng: 139.692,
+    lat: LAT_CENTER_TOKIO,
+    lng: LNG_CENTER_TOKIO,
   }).addTo(mymap);
-
-changeAddress(getAddress(mainMarker));
 
 mainMarker.on('move', (evt) => {
   const address = getAddress(evt.target);
   changeAddress(address);
 });
 
-const NUMBEROFOBJECTS = 10;
+const resetMainMarker = () => {
+  mainMarker.setLatLng({lat: LAT_CENTER_TOKIO, lng: LNG_CENTER_TOKIO});
+};
 
-const ads = getArrayOfDeclarations(NUMBEROFOBJECTS);
+const addressDefault = getAddress(mainMarker);
+
+changeAddress(addressDefault);
+
+//*****Похожие маркеры */
 
 const markerGroup = L.layerGroup().addTo(mymap);
 
-ads.forEach((obj) => {
-  const {lat, lng} = obj.location;
+const showAdsMap = (adArray) => {
+  adArray.forEach((obj) => {
+    const {lat, lng} = obj.location;
 
-  const regularMarker = {
-    urlIcon: '../img/pin.svg',
-    size: [40, 40],
-    anchor: [20, 40],
-    draggable: false,
-    lat: lat,
-    lng: lng,
-  };
+    const regularMarker = {
+      urlIcon: '../img/pin.svg',
+      size: [40, 40],
+      anchor: [20, 40],
+      draggable: false,
+      lat: lat,
+      lng: lng,
+    };
 
-  const marker = createSimilarMarker(regularMarker);
-  marker.bindPopup(getAd(obj)).openPopup();
-  addMarkerToGroup(marker, markerGroup);
-});
+    const marker = createSimilarMarker(regularMarker);
+    marker.bindPopup(getAd(obj)).openPopup();
+    addMarkerToGroup(marker, markerGroup);
+  });
+};
 
-export {createSimilarMarker, addMarkerToGroup, mymap};
+getAds(showAdsMap);
+
+export {createSimilarMarker, addMarkerToGroup, mymap, showAdsMap, resetMainMarker, addressDefault};

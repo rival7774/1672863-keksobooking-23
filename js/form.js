@@ -1,3 +1,6 @@
+import {postInquiry} from './api.js';
+import {resetMainMarker, addressDefault} from './map.js';
+
 const announcementForm = document.querySelector('.ad-form');
 const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
 const filterForm = document.querySelector('.map__filters');
@@ -10,6 +13,7 @@ const numberOfGuests = document.querySelector('#capacity');
 const checkInTime = document.querySelector('#timein');
 const checkOutTime = document.querySelector('#timeout');
 const address = document.querySelector('#address');
+const buttonReset = document.querySelector('.ad-form__reset');
 
 const roomTypeOption = Number(roomType.options[roomType.selectedIndex].dataset.minPrice);
 
@@ -141,8 +145,12 @@ numberOfRooms.addEventListener('change', validityGuests);
 
 //*******Влияние типа желья на минимальную цену за ночь */
 
-formPrice.placeholder = roomTypeOption;
-formPrice.min = roomTypeOption;
+const resetPrice = () => {
+  formPrice.placeholder = roomTypeOption;
+  formPrice.min = roomTypeOption;
+};
+
+resetPrice();
 
 roomType.addEventListener('change', () => {
   const valueData = roomType.options[roomType.selectedIndex].dataset.minPrice;
@@ -160,10 +168,98 @@ const synchronizeTime = (target, selectTime) => {
 checkInTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkOutTime));
 checkOutTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkInTime));
 
-//*********dhfghsjodgvsx */
+//*********Добавить кординаты в инпут адресс */
 
 const changeAddress = (stringAddress) => {
   address.value = stringAddress;
 };
 
-export {blockForms, unlockForms, changeAddress};
+//*****Сброс форм */
+
+const resetForm = (evt) => {
+  evt.preventDefault();
+  filterForm.reset();
+  announcementForm.reset();
+  resetMainMarker();
+  changeAddress(addressDefault);
+  resetPrice();
+  validityGuests();
+};
+
+//******Сообщения отправки формы */
+
+const templateError = document.querySelector('#error').content;
+const elementError = templateError.querySelector('.error');
+const templateSuccess = document.querySelector('#success').content;
+const elementSuccess = templateSuccess.querySelector('.success');
+
+const ATTRIBUT_DATA_REQUEST = 'data-send-request';
+const ATTRIBUT_DATA_CLOSE = 'data-modal-closed';
+
+const showDialog = (elem, submittingForm, resetForms) => function () {
+  const elementClone = elem.cloneNode(true);
+  document.body.appendChild(elementClone);
+
+  const reset = (nameFunction) => {
+    elementClone.remove();
+    document.removeEventListener('keydown', nameFunction);
+    if (resetForms) {
+      resetForms();
+    }
+  };
+
+  const closeModalKeyboard = (evt) => {
+    if (evt.key === 'Escape') {
+      reset.bind(null, closeModalKeyboard);
+    }
+  };
+
+  elementClone.addEventListener('click', reset.bind(null, closeModalKeyboard));
+
+  document.addEventListener('keydown', closeModalKeyboard);
+
+  elementClone.addEventListener('click', (evt) => {
+    if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
+      elementClone.remove();
+      document.removeEventListener('keydown', closeModalKeyboard);
+      if (submittingForm) {
+        submittingForm();
+      }
+    }if (evt.target.hasAttribute(ATTRIBUT_DATA_CLOSE)) {
+      reset();
+    }
+  });
+};
+
+const TEXT_ERROR = 'Ошибка сервера, попробуйте перезагрузить страницу';
+const TEXT_BUTTON = 'Закрыть сообщение';
+
+const getMessageError = (elem, messageText, buttonText) => {
+  const elementClone = elem.cloneNode(true);
+  const message = elementClone.querySelector('.error__message');
+  const button = elementClone.querySelector('.error__button');
+
+  message.textContent = messageText;
+  button.textContent = buttonText;
+  button.removeAttribute(ATTRIBUT_DATA_REQUEST);
+  button.setAttribute(ATTRIBUT_DATA_CLOSE, '');
+
+  return elementClone;
+};
+
+const messageError = getMessageError(elementError, TEXT_ERROR, TEXT_BUTTON);
+
+//******Отправка формы */
+
+announcementForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const data = new FormData(evt.target);
+
+  postInquiry(data, elementSuccess, elementError);
+});
+
+//*****Событие кнопки резет */
+
+buttonReset.addEventListener('click', resetForm);
+
+export {blockForms, unlockForms, changeAddress, showDialog, resetForm, messageError};

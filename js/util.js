@@ -1,5 +1,3 @@
-import {getRandomAds} from './data.js';
-
 //!!*Ссылка на источник генерации https://myrusakov.ru/js-random-numbers.html
 const getRandomInRange = (min, max, number) => {
   let absMin = Math.abs(min);
@@ -31,6 +29,4 @@ const getRandomValueArray = (arr) => {
   return array;
 };
 
-const getArrayOfDeclarations = (numberOfAds) => Array.from({length: numberOfAds}).map(() => getRandomAds());
-
-export {getRandomInRange, getArrayOfDeclarations, getRandomValueArray};
+export {getRandomInRange, getRandomValueArray};
