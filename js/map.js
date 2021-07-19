@@ -96,7 +96,7 @@ const showAdsMap = (adArray) => {
   markerGroup.clearLayers();
 
   adArray.forEach((obj) => {
-    const {lat, lng} = obj.location;
+    const { lat, lng } = obj.location;
 
     const regularMarker = {
       urlIcon: '../img/pin.svg',

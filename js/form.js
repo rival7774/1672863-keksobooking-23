@@ -297,9 +297,6 @@ const filterAds = (arrayAds) =>
 
 //*****Отрисовка меток при изменении фильтра */
 
-filterForm.addEventListener('change', () => {
-  debounce(getAds(showAdsMap, messageError));
-  // setTimeout(() => getAds(showAdsMap, messageError), 500);
-});
+filterForm.addEventListener('change', debounce(() => getAds(showAdsMap, messageError), 500));
 
 export {blockForms, unlockForms, changeAddress, resetForm, filterAds};
