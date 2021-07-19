@@ -1,3 +1,7 @@
+import {postInquiry, getAds} from './api.js';
+import {resetMainMarker, addressDefault, showAdsMap, messageError} from './map.js';
+import {elementError, elementSuccess} from './dialog.js';
+
 const announcementForm = document.querySelector('.ad-form');
 const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
 const filterForm = document.querySelector('.map__filters');
@@ -10,12 +14,17 @@ const numberOfGuests = document.querySelector('#capacity');
 const checkInTime = document.querySelector('#timein');
 const checkOutTime = document.querySelector('#timeout');
 const address = document.querySelector('#address');
+const buttonReset = document.querySelector('.ad-form__reset');
 
 const roomTypeOption = Number(roomType.options[roomType.selectedIndex].dataset.minPrice);
 
-//*****Блокировка форм и филдсетов */
-
 const DISABL_CSS_FORM = 'ad-form--disabled';
+const MIN_VALUE_TITLE = 30;
+const MAX_VALUE_TITLE = 100;
+const MAX_VALUE_PRICE = 1000000;
+const MAX_VALUE = 100;
+
+//*****Блокировка форм и филдсетов */
 
 const disabledForm = (form, cssClass) => {
   form.classList.add(cssClass);
@@ -60,9 +69,6 @@ blockForms();
 const minValue = (value, minVal) =>  value > minVal;
 const maxValue = (value, maxVal) =>  value < maxVal;
 
-const MIN_VALUE_TITLE = 30;
-const MAX_VALUE_TITLE = 100;
-
 const validityTitle = (evt) => {
   const target = evt.target;
   const validities = [];
@@ -87,7 +93,6 @@ const validityTitle = (evt) => {
 formTitle.addEventListener('input', validityTitle);
 
 let minValuePrice = Number(roomTypeOption);
-const MAX_VALUE_PRICE = 1000000;
 
 const validityPrice = (evt) => {
   const target = evt.target;
@@ -115,8 +120,6 @@ formPrice.addEventListener('input', validityPrice);
 
 //********Синхронизация количества комнат с количеством мест */
 
-const MAX_VALUE = 100;
-
 const validityGuests = () => {
   const roomValue = Number(numberOfRooms.value);
 
@@ -141,8 +144,12 @@ numberOfRooms.addEventListener('change', validityGuests);
 
 //*******Влияние типа желья на минимальную цену за ночь */
 
-formPrice.placeholder = roomTypeOption;
-formPrice.min = roomTypeOption;
+const resetPrice = () => {
+  formPrice.placeholder = roomTypeOption;
+  formPrice.min = roomTypeOption;
+};
+
+resetPrice();
 
 roomType.addEventListener('change', () => {
   const valueData = roomType.options[roomType.selectedIndex].dataset.minPrice;
@@ -160,10 +167,137 @@ const synchronizeTime = (target, selectTime) => {
 checkInTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkOutTime));
 checkOutTime.addEventListener('change', (evt) => synchronizeTime(evt.target, checkInTime));
 
-//*********dhfghsjodgvsx */
+//*********Добавить кординаты в инпут адресс */
 
 const changeAddress = (stringAddress) => {
   address.value = stringAddress;
 };
 
-export {blockForms, unlockForms, changeAddress};
+//*****Сброс форм */
+
+const resetForm = (evt) => {
+  evt.preventDefault();
+  filterForm.reset();
+  announcementForm.reset();
+  resetMainMarker();
+  changeAddress(addressDefault);
+  resetPrice();
+  validityGuests();
+  getAds(showAdsMap, messageError);
+};
+
+//******Отправка формы */
+
+announcementForm.addEventListener('submit', (evt) => {
+  evt.preventDefault();
+  const data = new FormData(evt.target);
+
+  postInquiry(data, elementSuccess, elementError);
+});
+
+//*****Событие кнопки резет */
+
+buttonReset.addEventListener('click', resetForm);
+
+//*****Фильтрация объявлений */
+
+const type = filterForm.querySelector('#housing-type');
+const price = filterForm.querySelector('#housing-price');
+const rooms = filterForm.querySelector('#housing-rooms');
+const guests = filterForm.querySelector('#housing-guests');
+const filterCheckbox = filterForm.querySelectorAll('.map__checkbox');
+
+const checkType = (obj) => {
+  let typeBullean = obj.offer.type === type.value;
+
+  if (type.value === 'any') {
+    typeBullean = true;
+  }
+
+  return typeBullean;
+};
+
+const checkPrice = (obj) => {
+  let priceBullean = false;
+  if (price.value === 'any') {
+    priceBullean = true;
+  } else if (price.value === 'middle') {
+    priceBullean = obj.offer.price > 10000 && obj.offer.price < 50000;
+  } else if (price.value === 'low') {
+    priceBullean = obj.offer.price < 10000;
+  } else if (price.value === 'high') {
+    priceBullean = obj.offer.price > 50000;
+  }
+
+  return priceBullean;
+};
+
+const checkRooms = (obj) => {
+  let roomsBullean = obj.offer.rooms === Number(rooms.value);
+  if (rooms.value === 'any') {
+    roomsBullean = true;
+  }
+
+  return roomsBullean;
+};
+
+const checkGuests = (obj) => {
+  let guestsBullean = obj.offer.guests === Number(guests.value);
+  if (guests.value === 'any') {
+    guestsBullean = true;
+  }
+
+  return guestsBullean;
+};
+
+const getSelectedAmenities = (checkboxs) => {
+  const selectedAmenities = [];
+
+  checkboxs.forEach((checkbox) => {
+    if (checkbox.checked) {
+      selectedAmenities.push(checkbox.value);
+    }
+  });
+
+  return selectedAmenities;
+};
+
+const compareArrays = (arrayA, arrayB) => {
+  let counter = 0;
+
+  if (arrayB.length !== 0 && arrayA) {
+    for (let i = 0; i < arrayB.length; i++) {
+      if (arrayA.includes(arrayB[i])) {
+        counter++;
+      } else {
+        counter = 0;
+        break;
+      }
+    }
+  } else if (arrayB.length === 0) {
+    return true;
+  } else if (!arrayA) {
+    return false;
+  }
+
+  if (counter) {
+    return true;
+  }
+
+  return false;
+};
+
+const filterAds = (arrayAds) =>
+  arrayAds.filter((elem) => {
+    if (checkType(elem) && checkPrice(elem) && checkRooms(elem) && checkGuests(elem) && compareArrays(elem.offer.features, getSelectedAmenities(filterCheckbox))) {
+      return true;
+    }
+  });
+
+//*****Отрисовка меток при изменении фильтра */
+
+filterForm.addEventListener('change', () => {
+  setTimeout(() => getAds(showAdsMap, messageError), 500);
+});
+
+export {blockForms, unlockForms, changeAddress, resetForm, filterAds};

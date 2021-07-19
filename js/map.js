@@ -1,6 +1,13 @@
-import {blockForms, unlockForms, changeAddress} from './form.js';
-import {getGeneratedAd} from './data.js';
-import {getArrayOfDeclarations} from './util.js';
+import {unlockForms, changeAddress} from './form.js';
+import {createAdElement} from './data.js';
+import { getAds } from './api.js';
+import {messageError} from './dialog.js';
+
+const AMOUNT_OF_NUMBERS = 5;
+const LAT_CENTER_TOKIO = 35.6894;
+const LNG_CENTER_TOKIO = 139.692;
+
+//******Создание карты */
 
 const mymap = L.map('map-canvas')
   .on('load', () => {
@@ -19,7 +26,9 @@ L.tileLayer(
   },
 ).addTo(mymap);
 
-const getGroupMarkers = (marker, group) => {
+//*****Создание маркеров */
+
+const addMarkerToGroup = (marker, group) => {
   marker.addTo(group);
 };
 
@@ -45,42 +54,65 @@ const createSimilarMarker = ({urlIcon, size, anchor, draggable, lat, lng}) => {
   return marker;
 };
 
+//*****Получение координат */
+
 const getAddress = (marker) => {
-  const lat = marker.getLatLng().lat.toFixed(5);
-  const lng = marker.getLatLng().lng.toFixed(5);
+  const lat = marker.getLatLng().lat.toFixed(AMOUNT_OF_NUMBERS);
+  const lng = marker.getLatLng().lng.toFixed(AMOUNT_OF_NUMBERS);
 
   return `Широта - ${lat}, высота - ${lng}`;
 };
-//!!!Найти критерий по именованию событий
 
-const mainMarker = createSimilarMarker({urlIcon: '../img/main-pin.svg', size: [52, 52], anchor: [26, 52], draggable: true, lat: 35.6894, lng: 139.692}).addTo(mymap);
+//*****Главный маркер */
 
-changeAddress(getAddress(mainMarker));
+const mainMarker = createSimilarMarker(
+  {
+    urlIcon: '../img/main-pin.svg',
+    size: [52, 52],
+    anchor: [26, 52],
+    draggable: true,
+    lat: LAT_CENTER_TOKIO,
+    lng: LNG_CENTER_TOKIO,
+  }).addTo(mymap);
 
 mainMarker.on('move', (evt) => {
   const address = getAddress(evt.target);
   changeAddress(address);
 });
 
-const ads = getArrayOfDeclarations(10);
+const resetMainMarker = () => {
+  mainMarker.setLatLng({lat: LAT_CENTER_TOKIO, lng: LNG_CENTER_TOKIO});
+};
+
+const addressDefault = getAddress(mainMarker);
+
+changeAddress(addressDefault);
+
+//*****Похожие маркеры */
 
 const markerGroup = L.layerGroup().addTo(mymap);
 
-ads.forEach((obj) => {
-  const {lat, lng} = obj.location;
+const showAdsMap = (adArray) => {
+  markerGroup.clearLayers();
 
-  const regularMarker = {
-    urlIcon: '../img/pin.svg',
-    size: [40, 40],
-    anchor: [20, 40],
-    draggable: false,
-    lat: lat,
-    lng: lng,
-  };
+  adArray.forEach((obj) => {
+    const {lat, lng} = obj.location;
 
-  const marker = createSimilarMarker(regularMarker);
-  marker.bindPopup(getGeneratedAd(obj)).openPopup();
-  getGroupMarkers(marker, markerGroup);
-});
+    const regularMarker = {
+      urlIcon: '../img/pin.svg',
+      size: [40, 40],
+      anchor: [20, 40],
+      draggable: false,
+      lat: lat,
+      lng: lng,
+    };
 
-export {createSimilarMarker, getGroupMarkers, mymap};
+    const marker = createSimilarMarker(regularMarker);
+    marker.bindPopup(createAdElement(obj)).openPopup();
+    addMarkerToGroup(marker, markerGroup);
+  });
+};
+
+getAds(showAdsMap, messageError);
+
+export {createSimilarMarker, addMarkerToGroup, mymap, showAdsMap, resetMainMarker, addressDefault, getAds, messageError};
