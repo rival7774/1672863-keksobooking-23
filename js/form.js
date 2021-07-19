@@ -1,5 +1,6 @@
-import {postInquiry} from './api.js';
-import {resetMainMarker, addressDefault} from './map.js';
+import {postInquiry, getAds} from './api.js';
+import {resetMainMarker, addressDefault, showAdsMap, messageError} from './map.js';
+import {elementError, elementSuccess} from './dialog.js';
 
 const announcementForm = document.querySelector('.ad-form');
 const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
@@ -17,9 +18,13 @@ const buttonReset = document.querySelector('.ad-form__reset');
 
 const roomTypeOption = Number(roomType.options[roomType.selectedIndex].dataset.minPrice);
 
-//*****Блокировка форм и филдсетов */
-
 const DISABL_CSS_FORM = 'ad-form--disabled';
+const MIN_VALUE_TITLE = 30;
+const MAX_VALUE_TITLE = 100;
+const MAX_VALUE_PRICE = 1000000;
+const MAX_VALUE = 100;
+
+//*****Блокировка форм и филдсетов */
 
 const disabledForm = (form, cssClass) => {
   form.classList.add(cssClass);
@@ -64,9 +69,6 @@ blockForms();
 const minValue = (value, minVal) =>  value > minVal;
 const maxValue = (value, maxVal) =>  value < maxVal;
 
-const MIN_VALUE_TITLE = 30;
-const MAX_VALUE_TITLE = 100;
-
 const validityTitle = (evt) => {
   const target = evt.target;
   const validities = [];
@@ -91,7 +93,6 @@ const validityTitle = (evt) => {
 formTitle.addEventListener('input', validityTitle);
 
 let minValuePrice = Number(roomTypeOption);
-const MAX_VALUE_PRICE = 1000000;
 
 const validityPrice = (evt) => {
   const target = evt.target;
@@ -118,8 +119,6 @@ const validityPrice = (evt) => {
 formPrice.addEventListener('input', validityPrice);
 
 //********Синхронизация количества комнат с количеством мест */
-
-const MAX_VALUE = 100;
 
 const validityGuests = () => {
   const roomValue = Number(numberOfRooms.value);
@@ -184,70 +183,8 @@ const resetForm = (evt) => {
   changeAddress(addressDefault);
   resetPrice();
   validityGuests();
+  getAds(showAdsMap, messageError);
 };
-
-//******Сообщения отправки формы */
-
-const templateError = document.querySelector('#error').content;
-const elementError = templateError.querySelector('.error');
-const templateSuccess = document.querySelector('#success').content;
-const elementSuccess = templateSuccess.querySelector('.success');
-
-const ATTRIBUT_DATA_REQUEST = 'data-send-request';
-const ATTRIBUT_DATA_CLOSE = 'data-modal-closed';
-
-const showDialog = (elem, submittingForm, resetForms) => function () {
-  const elementClone = elem.cloneNode(true);
-  document.body.appendChild(elementClone);
-
-  const reset = (nameFunction) => {
-    elementClone.remove();
-    document.removeEventListener('keydown', nameFunction);
-    if (resetForms) {
-      resetForms();
-    }
-  };
-
-  const closeModalKeyboard = (evt) => {
-    if (evt.key === 'Escape') {
-      reset.bind(null, closeModalKeyboard);
-    }
-  };
-
-  elementClone.addEventListener('click', reset.bind(null, closeModalKeyboard));
-
-  document.addEventListener('keydown', closeModalKeyboard);
-
-  elementClone.addEventListener('click', (evt) => {
-    if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
-      elementClone.remove();
-      document.removeEventListener('keydown', closeModalKeyboard);
-      if (submittingForm) {
-        submittingForm();
-      }
-    }if (evt.target.hasAttribute(ATTRIBUT_DATA_CLOSE)) {
-      reset();
-    }
-  });
-};
-
-const TEXT_ERROR = 'Ошибка сервера, попробуйте перезагрузить страницу';
-const TEXT_BUTTON = 'Закрыть сообщение';
-
-const getMessageError = (elem, messageText, buttonText) => {
-  const elementClone = elem.cloneNode(true);
-  const message = elementClone.querySelector('.error__message');
-  const button = elementClone.querySelector('.error__button');
-
-  message.textContent = messageText;
-  button.textContent = buttonText;
-  button.removeAttribute(ATTRIBUT_DATA_REQUEST);
-  button.setAttribute(ATTRIBUT_DATA_CLOSE, '');
-
-  return elementClone;
-};
-
-const messageError = getMessageError(elementError, TEXT_ERROR, TEXT_BUTTON);
 
 //******Отправка формы */
 
@@ -262,4 +199,105 @@ announcementForm.addEventListener('submit', (evt) => {
 
 buttonReset.addEventListener('click', resetForm);
 
-export {blockForms, unlockForms, changeAddress, showDialog, resetForm, messageError};
+//*****Фильтрация объявлений */
+
+const type = filterForm.querySelector('#housing-type');
+const price = filterForm.querySelector('#housing-price');
+const rooms = filterForm.querySelector('#housing-rooms');
+const guests = filterForm.querySelector('#housing-guests');
+const filterCheckbox = filterForm.querySelectorAll('.map__checkbox');
+
+const checkType = (obj) => {
+  let typeBullean = obj.offer.type === type.value;
+
+  if (type.value === 'any') {
+    typeBullean = true;
+  }
+
+  return typeBullean;
+};
+
+const checkPrice = (obj) => {
+  let priceBullean = false;
+  if (price.value === 'any') {
+    priceBullean = true;
+  } else if (price.value === 'middle') {
+    priceBullean = obj.offer.price > 10000 && obj.offer.price < 50000;
+  } else if (price.value === 'low') {
+    priceBullean = obj.offer.price < 10000;
+  } else if (price.value === 'high') {
+    priceBullean = obj.offer.price > 50000;
+  }
+
+  return priceBullean;
+};
+
+const checkRooms = (obj) => {
+  let roomsBullean = obj.offer.rooms === Number(rooms.value);
+  if (rooms.value === 'any') {
+    roomsBullean = true;
+  }
+
+  return roomsBullean;
+};
+
+const checkGuests = (obj) => {
+  let guestsBullean = obj.offer.guests === Number(guests.value);
+  if (guests.value === 'any') {
+    guestsBullean = true;
+  }
+
+  return guestsBullean;
+};
+
+const getSelectedAmenities = (checkboxs) => {
+  const selectedAmenities = [];
+
+  checkboxs.forEach((checkbox) => {
+    if (checkbox.checked) {
+      selectedAmenities.push(checkbox.value);
+    }
+  });
+
+  return selectedAmenities;
+};
+
+const compareArrays = (arrayA, arrayB) => {
+  let counter = 0;
+
+  if (arrayB.length !== 0 && arrayA) {
+    for (let i = 0; i < arrayB.length; i++) {
+      if (arrayA.includes(arrayB[i])) {
+        counter++;
+      } else {
+        counter = 0;
+        break;
+      }
+    }
+  } else if (arrayB.length === 0) {
+    return true;
+  } else if (!arrayA) {
+    return false;
+  }
+
+  if (counter) {
+    return true;
+  }
+
+  return false;
+};
+
+const filterAds = (arrayAds) =>
+  arrayAds.filter((elem) => {
+    if (checkType(elem) && checkPrice(elem) && checkRooms(elem) && checkGuests(elem) && compareArrays(elem.offer.features, getSelectedAmenities(filterCheckbox))) {
+      return true;
+    }
+  });
+
+//*****Отрисовка меток при изменении фильтра */
+
+filterForm.addEventListener('change', () => {
+  setTimeout(() => getAds(showAdsMap, messageError), 500);
+});
+
+export {blockForms, unlockForms, changeAddress, resetForm, filterAds};

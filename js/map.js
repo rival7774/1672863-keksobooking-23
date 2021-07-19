@@ -1,6 +1,11 @@
 import {unlockForms, changeAddress} from './form.js';
-import {getAd} from './data.js';
-import {getAds} from './api.js';
+import {createAdElement} from './data.js';
+import { getAds } from './api.js';
+import {messageError} from './dialog.js';
+
+const AMOUNT_OF_NUMBERS = 5;
+const LAT_CENTER_TOKIO = 35.6894;
+const LNG_CENTER_TOKIO = 139.692;
 
 //******Создание карты */
 
@@ -51,19 +56,14 @@ const createSimilarMarker = ({urlIcon, size, anchor, draggable, lat, lng}) => {
 
 //*****Получение координат */
 
-const AMOUNTOFNUMBERS = 5;
-
 const getAddress = (marker) => {
-  const lat = marker.getLatLng().lat.toFixed(AMOUNTOFNUMBERS);
-  const lng = marker.getLatLng().lng.toFixed(AMOUNTOFNUMBERS);
+  const lat = marker.getLatLng().lat.toFixed(AMOUNT_OF_NUMBERS);
+  const lng = marker.getLatLng().lng.toFixed(AMOUNT_OF_NUMBERS);
 
   return `Широта - ${lat}, высота - ${lng}`;
 };
 
 //*****Главный маркер */
-
-const LAT_CENTER_TOKIO = 35.6894;
-const LNG_CENTER_TOKIO = 139.692;
 
 const mainMarker = createSimilarMarker(
   {
@@ -93,6 +93,8 @@ changeAddress(addressDefault);
 const markerGroup = L.layerGroup().addTo(mymap);
 
 const showAdsMap = (adArray) => {
+  markerGroup.clearLayers();
+
   adArray.forEach((obj) => {
     const {lat, lng} = obj.location;
 
@@ -106,11 +108,11 @@ const showAdsMap = (adArray) => {
     };
 
     const marker = createSimilarMarker(regularMarker);
-    marker.bindPopup(getAd(obj)).openPopup();
+    marker.bindPopup(createAdElement(obj)).openPopup();
     addMarkerToGroup(marker, markerGroup);
   });
 };
 
-getAds(showAdsMap);
+getAds(showAdsMap, messageError);
 
-export {createSimilarMarker, addMarkerToGroup, mymap, showAdsMap, resetMainMarker, addressDefault};
+export {createSimilarMarker, addMarkerToGroup, mymap, showAdsMap, resetMainMarker, addressDefault, getAds, messageError};

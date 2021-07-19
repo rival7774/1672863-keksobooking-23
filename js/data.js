@@ -35,8 +35,9 @@ const translation = {
   hotel:'Отель',
 };
 
-const getAd = (obj) => {
-  const template = document.querySelector('#card').content;
+const template = document.querySelector('#card').content;
+
+const createAdElement = (obj) => {
   const popup = template.querySelector('.popup');
   const element = popup.cloneNode(true);
 
@@ -123,4 +124,4 @@ const getAd = (obj) => {
   return element;
 };
 
-export {getAd};
+export {createAdElement};
