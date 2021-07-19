@@ -1,6 +1,7 @@
 import {postInquiry, getAds} from './api.js';
 import {resetMainMarker, addressDefault, showAdsMap, messageError} from './map.js';
 import {elementError, elementSuccess} from './dialog.js';
+import {debounce} from './utils/debounce.js';
 
 const announcementForm = document.querySelector('.ad-form');
 const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
@@ -297,7 +298,8 @@ const filterAds = (arrayAds) =>
 //*****Отрисовка меток при изменении фильтра */
 
 filterForm.addEventListener('change', () => {
-  setTimeout(() => getAds(showAdsMap, messageError), 500);
+  debounce(getAds(showAdsMap, messageError));
+  // setTimeout(() => getAds(showAdsMap, messageError), 500);
 });
 
 export {blockForms, unlockForms, changeAddress, resetForm, filterAds};
