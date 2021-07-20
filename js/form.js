@@ -23,7 +23,14 @@ const DISABL_CSS_FORM = 'ad-form--disabled';
 const MIN_VALUE_TITLE = 30;
 const MAX_VALUE_TITLE = 100;
 const MAX_VALUE_PRICE = 1000000;
-const MAX_VALUE = 100;
+const MAXIMUM_NUMBER_ROOMS = 100;
+const ANY = 'any';
+const MIDDLE_PRICE = 'middle';
+const LOW_PRICE = 'low';
+const HIGH_PRICE = 'high';
+const MIN_PRICE = 10000;
+const MAX_PRICE = 50000;
+const DELAY = 500;
 
 //*****Блокировка форм и филдсетов */
 
@@ -127,10 +134,10 @@ const validityGuests = () => {
   for (let i = 0; i < numberOfGuests.options.length; i++) {
     const guestsValue = Number(numberOfGuests.options[i].value);
 
-    if (roomValue >= guestsValue && roomValue !== MAX_VALUE) {
+    if (roomValue >= guestsValue && roomValue !== MAXIMUM_NUMBER_ROOMS) {
       numberOfGuests.options[i].disabled = false;
-    }else if (roomValue === MAX_VALUE && guestsValue === MAX_VALUE) {
-      numberOfGuests.options[i].disabled = guestsValue !== MAX_VALUE;
+    }else if (roomValue === MAXIMUM_NUMBER_ROOMS && guestsValue === MAXIMUM_NUMBER_ROOMS) {
+      numberOfGuests.options[i].disabled = guestsValue !== MAXIMUM_NUMBER_ROOMS;
     }else {
       numberOfGuests.options[i].disabled = true;
     }
@@ -211,7 +218,7 @@ const filterCheckbox = filterForm.querySelectorAll('.map__checkbox');
 const checkType = (obj) => {
   let typeBullean = obj.offer.type === type.value;
 
-  if (type.value === 'any') {
+  if (type.value === ANY) {
     typeBullean = true;
   }
 
@@ -220,14 +227,14 @@ const checkType = (obj) => {
 
 const checkPrice = (obj) => {
   let priceBullean = false;
-  if (price.value === 'any') {
+  if (price.value === ANY) {
     priceBullean = true;
-  } else if (price.value === 'middle') {
-    priceBullean = obj.offer.price > 10000 && obj.offer.price < 50000;
-  } else if (price.value === 'low') {
-    priceBullean = obj.offer.price < 10000;
-  } else if (price.value === 'high') {
-    priceBullean = obj.offer.price > 50000;
+  } else if (price.value === MIDDLE_PRICE) {
+    priceBullean = obj.offer.price > MIN_PRICE && obj.offer.price < MAX_PRICE;
+  } else if (price.value === LOW_PRICE) {
+    priceBullean = obj.offer.price < MIN_PRICE;
+  } else if (price.value === HIGH_PRICE) {
+    priceBullean = obj.offer.price > MAX_PRICE;
   }
 
   return priceBullean;
@@ -235,7 +242,7 @@ const checkPrice = (obj) => {
 
 const checkRooms = (obj) => {
   let roomsBullean = obj.offer.rooms === Number(rooms.value);
-  if (rooms.value === 'any') {
+  if (rooms.value === ANY) {
     roomsBullean = true;
   }
 
@@ -244,7 +251,7 @@ const checkRooms = (obj) => {
 
 const checkGuests = (obj) => {
   let guestsBullean = obj.offer.guests === Number(guests.value);
-  if (guests.value === 'any') {
+  if (guests.value === ANY) {
     guestsBullean = true;
   }
 
@@ -297,6 +304,6 @@ const filterAds = (arrayAds) =>
 
 //*****Отрисовка меток при изменении фильтра */
 
-filterForm.addEventListener('change', debounce(() => getAds(showAdsMap, messageError), 500));
+filterForm.addEventListener('change', debounce(() => getAds(showAdsMap, messageError), DELAY));
 
 export {blockForms, unlockForms, changeAddress, resetForm, filterAds};
