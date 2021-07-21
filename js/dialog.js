@@ -20,7 +20,7 @@ const showDialog = (elem, callback) => {
     }
   }
 
-  function removeDialog(evt) {  //!!Нужно для возможности доступа области видимости
+  function removeDialog(evt) {  //!!Нужно для возможности доступа
     dialog.remove();
     document.removeEventListener('keydown', onModalClose);
 
