@@ -1,11 +1,10 @@
-import {unlockForms, changeAddress} from './form.js';
+import {unlockForms, changeAddress, filterAds} from './form.js';
 import {createAdElement} from './data.js';
-import { getAds } from './api.js';
-import {messageError} from './dialog.js';
 
 const AMOUNT_OF_NUMBERS = 5;
 const LAT_CENTER_TOKIO = 35.6894;
 const LNG_CENTER_TOKIO = 139.692;
+const AMOUNT_ADS = 10;
 
 //******Создание карты */
 
@@ -92,11 +91,11 @@ changeAddress(addressDefault);
 
 const markerGroup = L.layerGroup().addTo(mymap);
 
-const showAdsMap = (adArray) => {
+const renderAds = (adArray) => {
   markerGroup.clearLayers();
 
   adArray.forEach((obj) => {
-    const { lat, lng } = obj.location;
+    const {lat, lng} = obj.location;
 
     const regularMarker = {
       urlIcon: '../img/pin.svg',
@@ -113,6 +112,9 @@ const showAdsMap = (adArray) => {
   });
 };
 
-getAds(showAdsMap, messageError);
+const showAdsMap = (adArray) => {
+  const filteredAds = filterAds(adArray);
+  renderAds(filteredAds.slice(0, AMOUNT_ADS));
+};
 
-export {createSimilarMarker, addMarkerToGroup, mymap, showAdsMap, resetMainMarker, addressDefault, getAds, messageError};
+export {createSimilarMarker, addMarkerToGroup, mymap, renderAds, resetMainMarker, addressDefault, showAdsMap};

@@ -8,11 +8,15 @@ const createElementFeature = (endClass) => {
   return elem;
 };
 
-const insertElementFeatures = (arrayFeatures, insertIntoElement) => {
+const insertElementFeatures = (arrayFeatures) => {
+  const allFeatures = document.createDocumentFragment();
+
   arrayFeatures.forEach((elem) => {
     const feature = createElementFeature(elem);
-    insertIntoElement.appendChild(feature);
+    allFeatures.appendChild(feature);
   });
+
+  return allFeatures;
 };
 
 const createPhotos = (arraySrc, photoElement) => {
@@ -27,7 +31,7 @@ const createPhotos = (arraySrc, photoElement) => {
   return allPhoto;
 };
 
-const translation = {
+const roomsTypesTranslation = {
   palace: 'Дворец',
   flat: 'Квартира',
   house: 'Дом',
@@ -35,10 +39,10 @@ const translation = {
   hotel:'Отель',
 };
 
-const template = document.querySelector('#card').content;
+const cardTemplate = document.querySelector('#card').content;
+const popup = cardTemplate.querySelector('.popup');
 
 const createAdElement = (obj) => {
-  const popup = template.querySelector('.popup');
   const element = popup.cloneNode(true);
 
   const title = element.querySelector('.popup__title');
@@ -55,69 +59,63 @@ const createAdElement = (obj) => {
 
   if (obj.offer.title) {
     title.textContent = obj.offer.title;
-  }else {
+  } else {
     hideElement(title);
   }
 
   if (obj.offer.address) {
     address.textContent = obj.offer.address;
-  }else {
+  } else {
     hideElement(address);
   }
 
   if (obj.offer.price) {
     price.innerHTML = `${obj.offer.price} <span>₽/ночь</span>`;
-  }else {
+  } else {
     hideElement(price);
   }
 
   if (obj.offer.type) {
-    type.textContent = translation[obj.offer.type];
-  }else {
+    type.textContent = roomsTypesTranslation[obj.offer.type];
+  } else {
     hideElement(type);
   }
 
   if (obj.offer.rooms && obj.offer.guests) {
     capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
-  }else {
-    hideElement(capacity);
-  }
-
-  if (obj.offer.rooms && obj.offer.guests) {
-    capacity.textContent = `${obj.offer.rooms} комнаты/a для ${obj.offer.guests} гостей`;
-  }else {
+  } else {
     hideElement(capacity);
   }
 
   if (obj.offer.checkin && obj.offer.checkout) {
     timeText.textContent = `Заезд после ${obj.offer.checkin}, выезд до ${obj.offer.checkout}`;
-  }else {
+  } else {
     hideElement(timeText);
   }
 
   if (obj.offer.features) {
     featuresPopup.innerHTML = '';
-    insertElementFeatures(obj.offer.features, featuresPopup);
-  }else {
+    featuresPopup.appendChild(insertElementFeatures(obj.offer.features));
+  } else {
     hideElement(featuresPopup);
   }
 
   if (obj.offer.description) {
     description.textContent = obj.offer.description;
-  }else {
+  } else {
     hideElement(description);
   }
 
   if (obj.offer.photos) {
     photos.innerHTML = '';
     photos.appendChild(createPhotos(obj.offer.photos, photo));
-  }else {
+  } else {
     hideElement(photos);
   }
 
   if (obj.author.avatar) {
     avatar.src = obj.author.avatar;
-  }else {
+  } else {
     hideElement(avatar);
   }
 

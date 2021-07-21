@@ -10,37 +10,29 @@ const ATTRIBUT_DATA_CLOSE = 'data-modal-closed';
 const TEXT_ERROR = 'Ошибка сервера, попробуйте перезагрузить страницу';
 const TEXT_BUTTON = 'Закрыть сообщение';
 
-const showDialog = (elem, submittingForm, resetForms) => {
+const showDialog = (elem, callback) => {
   const dialog = elem.cloneNode(true);
   document.body.appendChild(dialog);
 
-  function onCloseModal(evt) {
+  function onModalClose(evt) {
     if (evt.key === 'Escape') {
-      removeDialog();
+      removeDialog(evt);
     }
   }
 
-  function removeDialog() {  //!!Нужно для возможности доступа области видимости
+  function removeDialog(evt) {  //!!Нужно для возможности доступа области видимости
     dialog.remove();
-    document.removeEventListener('keydown', onCloseModal);
-    if (resetForms) {
-      resetForms();
+    document.removeEventListener('keydown', onModalClose);
+
+    if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
+      callback();
     }
   }
 
-  dialog.addEventListener('click', removeDialog);
-
-  document.addEventListener('keydown', onCloseModal);
+  document.addEventListener('keydown', onModalClose);
 
   dialog.addEventListener('click', (evt) => {
-    if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
-      removeDialog();
-      if (submittingForm) {
-        submittingForm();
-      }
-    }if (evt.target.hasAttribute(ATTRIBUT_DATA_CLOSE)) {
-      removeDialog();
-    }
+    removeDialog(evt);
   });
 };
 
@@ -59,4 +51,4 @@ const getMessageError = (elem, messageText, buttonText) => {
 
 const messageError = getMessageError(elementError, TEXT_ERROR, TEXT_BUTTON);
 
-export {showDialog, messageError, elementError, elementSuccess};
+export { showDialog, messageError, elementError, elementSuccess };

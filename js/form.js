@@ -1,12 +1,11 @@
-import {postInquiry, getAds} from './api.js';
-import {resetMainMarker, addressDefault, showAdsMap, messageError} from './map.js';
-import {elementError, elementSuccess} from './dialog.js';
+import {sendAnnouncementAd} from './api.js';
+import {resetMainMarker, addressDefault, showAdsMap} from './map.js';
+import {elementError, elementSuccess, showDialog} from './dialog.js';
 import {debounce} from './utils/debounce.js';
+import {ads} from './main.js';
 
 const announcementForm = document.querySelector('.ad-form');
-const announcementFormFieldset = announcementForm.querySelectorAll('fieldset');
 const filterForm = document.querySelector('.map__filters');
-const filterFormFieldset = filterForm.querySelectorAll('fieldset');
 const formTitle = announcementForm.querySelector('#title');
 const formPrice = announcementForm.querySelector('#price');
 const roomType = document.querySelector('#type');
@@ -38,54 +37,38 @@ const disabledForm = (form, cssClass) => {
   form.classList.add(cssClass);
 };
 
-const disabledFieldset = (allFildset) => {
-  allFildset.forEach((elem) => {
-    elem.disabled = true;
-  });
-};
-
 const activateForm = (form, cssClass) => {
   form.classList.remove(cssClass);
 };
 
-const activateFieldset = (allFildset) => {
-  allFildset.forEach((elem) => {
-    elem.disabled = false;
-  });
-};
-
 const blockForms = () => {
   disabledForm(announcementForm, DISABL_CSS_FORM);
-  disabledFieldset(announcementFormFieldset);
 
   disabledForm(filterForm, DISABL_CSS_FORM);
-  disabledFieldset(filterFormFieldset);
 };
 
 const unlockForms = () => {
   activateForm(announcementForm, DISABL_CSS_FORM);
-  activateFieldset(announcementFormFieldset);
 
   activateForm(filterForm, DISABL_CSS_FORM);
-  activateFieldset(filterFormFieldset);
 };
 
 blockForms();
 
 //*******Валидация заголовка и цены за ночь */
 
-const minValue = (value, minVal) =>  value > minVal;
-const maxValue = (value, maxVal) =>  value < maxVal;
+const isMinValue = (value, minVal) =>  value > minVal;
+const isMaxValue = (value, maxVal) =>  value < maxVal;
 
 const validityTitle = (evt) => {
   const target = evt.target;
   const validities = [];
 
-  if (!minValue(target.value.length, MIN_VALUE_TITLE)) {
+  if (!isMinValue(target.value.length, MIN_VALUE_TITLE)) {
     validities.push(`Поле должно содержать минимум ${MIN_VALUE_TITLE} символов\nСейчас у вас введенно ${target.value.length}\nНужно удалить ${MIN_VALUE_TITLE - target.value.length}`);
   }
 
-  if (!maxValue(target.value.length, MAX_VALUE_TITLE)) {
+  if (!isMaxValue(target.value.length, MAX_VALUE_TITLE)) {
     validities.push(`Поле должно содержать максимум ${MAX_VALUE_TITLE} символов\nСейчас у вас введенно ${target.value.length}\nНужно удалить ${target.value.length - MAX_VALUE_TITLE}`);
   }
 
@@ -102,16 +85,16 @@ formTitle.addEventListener('input', validityTitle);
 
 let minValuePrice = Number(roomTypeOption);
 
-const validityPrice = (evt) => {
+const validatePrice = (evt) => {
   const target = evt.target;
   const targetValue = Number(target.value);
   const validities = [];
 
-  if (!minValue(targetValue, minValuePrice)) {
+  if (!isMinValue(targetValue, minValuePrice)) {
     validities.push(`Минимальная цена ${minValuePrice}р.\nСейчас ваша цена ${targetValue}р.`);
   }
 
-  if (!maxValue(targetValue, MAX_VALUE_PRICE)) {
+  if (!isMaxValue(targetValue, MAX_VALUE_PRICE)) {
     validities.push(`Максимальная цена ${MAX_VALUE_PRICE}р. символов\nСейчас ваша цена ${target.value}р.\n`);
   }
 
@@ -124,7 +107,7 @@ const validityPrice = (evt) => {
   target.reportValidity();
 };
 
-formPrice.addEventListener('input', validityPrice);
+formPrice.addEventListener('input', validatePrice);
 
 //********Синхронизация количества комнат с количеством мест */
 
@@ -184,23 +167,34 @@ const changeAddress = (stringAddress) => {
 //*****Сброс форм */
 
 const resetForm = (evt) => {
-  evt.preventDefault();
+  if (evt) {
+    evt.preventDefault();
+  }
   filterForm.reset();
   announcementForm.reset();
   resetMainMarker();
   changeAddress(addressDefault);
   resetPrice();
   validityGuests();
-  getAds(showAdsMap, messageError);
+  showAdsMap(ads);
 };
 
 //******Отправка формы */
+
+const onErrorSendingAd = (data, onSuccess, post) => () => {
+  showDialog(elementError, () => post(data, onSuccess, onErrorSendingAd(data, onSuccess, post)));
+};
+
+const onSuccessfulAdSending = () => {
+  resetForm();
+  showDialog(elementSuccess);
+};
 
 announcementForm.addEventListener('submit', (evt) => {
   evt.preventDefault();
   const data = new FormData(evt.target);
 
-  postInquiry(data, elementSuccess, elementError);
+  sendAnnouncementAd(data, onSuccessfulAdSending, onErrorSendingAd(onSuccessfulAdSending, data, sendAnnouncementAd));
 });
 
 //*****Событие кнопки резет */
@@ -270,40 +264,22 @@ const getSelectedAmenities = (checkboxs) => {
   return selectedAmenities;
 };
 
-const compareArrays = (arrayA, arrayB) => {
-  let counter = 0;
+const validateFeatures = (obj) => {
+  const selectedAmenities = getSelectedAmenities(filterCheckbox);
 
-  if (arrayB.length !== 0 && arrayA) {
-    for (let i = 0; i < arrayB.length; i++) {
-      if (arrayA.includes(arrayB[i])) {
-        counter++;
-      } else {
-        counter = 0;
-        break;
-      }
-    }
-  } else if (arrayB.length === 0) {
-    return true;
-  } else if (!arrayA) {
-    return false;
-  }
-
-  if (counter) {
-    return true;
-  }
-
-  return false;
+  return [...selectedAmenities].every((elem) => obj.offer.features && obj.offer.features.includes(elem));
 };
 
 const filterAds = (arrayAds) =>
-  arrayAds.filter((elem) => {
-    if (checkType(elem) && checkPrice(elem) && checkRooms(elem) && checkGuests(elem) && compareArrays(elem.offer.features, getSelectedAmenities(filterCheckbox))) {
-      return true;
-    }
-  });
+  arrayAds.filter((elem) =>
+    checkType(elem) &&
+    checkPrice(elem) &&
+    checkRooms(elem) &&
+    checkGuests(elem) &&
+    validateFeatures(elem));
 
 //*****Отрисовка меток при изменении фильтра */
 
-filterForm.addEventListener('change', debounce(() => getAds(showAdsMap, messageError), DELAY));
+filterForm.addEventListener('change', debounce(() => showAdsMap(ads), DELAY));
 
 export {blockForms, unlockForms, changeAddress, resetForm, filterAds};
