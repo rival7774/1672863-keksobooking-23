@@ -14,7 +14,7 @@ const showDialog = (elem, callback) => {
   const dialog = elem.cloneNode(true);
   document.body.appendChild(dialog);
 
-  function onModalClose(evt) {
+  function onModalKeydown(evt) {
     if (evt.key === 'Escape') {
       removeDialog(evt);
     }
@@ -22,18 +22,20 @@ const showDialog = (elem, callback) => {
 
   function removeDialog(evt) {  //!!Нужно для возможности доступа
     dialog.remove();
-    document.removeEventListener('keydown', onModalClose);
+    document.removeEventListener('keydown', onModalKeydown);
 
     if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
       callback();
     }
   }
 
-  document.addEventListener('keydown', onModalClose);
-
-  dialog.addEventListener('click', (evt) => {
+  function onModalClick(evt) {
     removeDialog(evt);
-  });
+  }
+
+  document.addEventListener('keydown', onModalKeydown);
+
+  dialog.addEventListener('click', onModalClick);
 };
 
 const getMessageError = (elem, messageText, buttonText) => {

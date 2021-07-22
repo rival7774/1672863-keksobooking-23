@@ -3,7 +3,7 @@ const URL_POST = 'HTTPS://23.javascript.pages.academy/keksobooking';
 
 //******Запрос методом гет */
 
-const getAds = (onSuccess, onError) => {
+const requestAds = (onSuccess, onError) => {
   fetch(URL_ADS)
     .then((response) => {
       if (response.ok) {
@@ -13,6 +13,7 @@ const getAds = (onSuccess, onError) => {
       }
     }).then((ads) => {
       onSuccess(ads);
+      return ads;
     }).catch(() => {
       onError();
     });
@@ -38,4 +39,4 @@ const sendAnnouncementAd = (data, onSuccess, onError) => {
     .catch(onError());
 };
 
-export {getAds, sendAnnouncementAd};
+export {requestAds, sendAnnouncementAd};

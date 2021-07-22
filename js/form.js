@@ -2,7 +2,7 @@ import {sendAnnouncementAd} from './api.js';
 import {resetMainMarker, addressDefault, showAdsMap} from './map.js';
 import {elementError, elementSuccess, showDialog} from './dialog.js';
 import {debounce} from './utils/debounce.js';
-import {ads} from './main.js';
+import {getAds} from './main.js';
 
 const announcementForm = document.querySelector('.ad-form');
 const filterForm = document.querySelector('.map__filters');
@@ -33,7 +33,7 @@ const DELAY = 500;
 
 //*****Блокировка форм и филдсетов */
 
-const disabledForm = (form, cssClass) => {
+const blockForm = (form, cssClass) => {   //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
   form.classList.add(cssClass);
 };
 
@@ -42,25 +42,25 @@ const activateForm = (form, cssClass) => {
 };
 
 const blockForms = () => {
-  disabledForm(announcementForm, DISABL_CSS_FORM);
+  blockForm(announcementForm, DISABL_CSS_FORM);
 
-  disabledForm(filterForm, DISABL_CSS_FORM);
-};
-
-const unlockForms = () => {
-  activateForm(announcementForm, DISABL_CSS_FORM);
-
-  activateForm(filterForm, DISABL_CSS_FORM);
+  blockForm(filterForm, DISABL_CSS_FORM);
 };
 
 blockForms();
 
 //*******Валидация заголовка и цены за ночь */
 
-const isMinValue = (value, minVal) =>  value > minVal;
-const isMaxValue = (value, maxVal) =>  value < maxVal;
+const isMinValue = (value, minVal) => {  //!!Б2. При выполнении кода не возникает необработанных ошибок. некорректно реализована валидация заголовка - "введено 100 удалите 0"
+  if (value >= 0) {
+    return value >= minVal;
+  }
 
-const validityTitle = (evt) => {
+  return value > minVal;
+};
+const isMaxValue = (value, maxVal) =>  value <= maxVal;  //!!Б2. При выполнении кода не возникает необработанных ошибок. некорректно реализована валидация заголовка - "введено 100 удалите 0"
+
+const onFormInput = (evt) => {  //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
   const target = evt.target;
   const validities = [];
 
@@ -81,11 +81,11 @@ const validityTitle = (evt) => {
   target.reportValidity();
 };
 
-formTitle.addEventListener('input', validityTitle);
+formTitle.addEventListener('input', onFormInput);
 
 let minValuePrice = Number(roomTypeOption);
 
-const validatePrice = (evt) => {
+const onPriceinput = (evt) => {    //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
   const target = evt.target;
   const targetValue = Number(target.value);
   const validities = [];
@@ -107,37 +107,38 @@ const validatePrice = (evt) => {
   target.reportValidity();
 };
 
-formPrice.addEventListener('input', validatePrice);
+formPrice.addEventListener('input', onPriceinput);
 
 //********Синхронизация количества комнат с количеством мест */
 
-const validityGuests = () => {
+const onGuestsChange = () => {    //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
   const roomValue = Number(numberOfRooms.value);
 
-  for (let i = 0; i < numberOfGuests.options.length; i++) {
-    const guestsValue = Number(numberOfGuests.options[i].value);
+  [...numberOfGuests.options].forEach((elem) => {
+    const guestsValue = Number(elem.value);
 
     if (roomValue >= guestsValue && roomValue !== MAXIMUM_NUMBER_ROOMS) {
-      numberOfGuests.options[i].disabled = false;
-    }else if (roomValue === MAXIMUM_NUMBER_ROOMS && guestsValue === MAXIMUM_NUMBER_ROOMS) {
-      numberOfGuests.options[i].disabled = guestsValue !== MAXIMUM_NUMBER_ROOMS;
-    }else {
-      numberOfGuests.options[i].disabled = true;
+      elem.disabled = false;
+    } else if (roomValue === MAXIMUM_NUMBER_ROOMS && guestsValue === MAXIMUM_NUMBER_ROOMS) {
+      elem.disabled = guestsValue !== MAXIMUM_NUMBER_ROOMS;
+    } else {
+      elem.disabled = true;
     }
-  }
+  });
 
   numberOfGuests.value = numberOfRooms.value;
 };
 
-validityGuests();
+onGuestsChange();
 
-numberOfRooms.addEventListener('change', validityGuests);
+numberOfRooms.addEventListener('change', onGuestsChange);
 
 //*******Влияние типа желья на минимальную цену за ночь */
 
 const resetPrice = () => {
   formPrice.placeholder = roomTypeOption;
   formPrice.min = roomTypeOption;
+  minValuePrice = roomTypeOption;  //!!Б2.При выполнении кода не возникает необработанных ошибок. при сбросе плейсхолдер не соответствует минимальной цене - ломается валидация
 };
 
 resetPrice();
@@ -175,8 +176,8 @@ const resetForm = (evt) => {
   resetMainMarker();
   changeAddress(addressDefault);
   resetPrice();
-  validityGuests();
-  showAdsMap(ads);
+  onGuestsChange();
+  showAdsMap(getAds());
 };
 
 //******Отправка формы */
@@ -209,48 +210,26 @@ const rooms = filterForm.querySelector('#housing-rooms');
 const guests = filterForm.querySelector('#housing-guests');
 const filterCheckbox = filterForm.querySelectorAll('.map__checkbox');
 
-const checkType = (obj) => {
-  let typeBullean = obj.offer.type === type.value;
-
-  if (type.value === ANY) {
-    typeBullean = true;
-  }
-
-  return typeBullean;
-};
+const checkType = (obj) => type.value === ANY || obj.offer.type === type.value;  //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
 
 const checkPrice = (obj) => {
   let priceBullean = false;
   if (price.value === ANY) {
     priceBullean = true;
   } else if (price.value === MIDDLE_PRICE) {
-    priceBullean = obj.offer.price > MIN_PRICE && obj.offer.price < MAX_PRICE;
+    priceBullean = obj.offer.price >= MIN_PRICE && obj.offer.price <= MAX_PRICE;  //!!Б1. Код соответствует техническому заданию проекта. form.js checkPrice границы диапазонов не попадают в условия (в checkPrice проверки делают <1000 и >1000, а 1000 между ними «проваливается»)
   } else if (price.value === LOW_PRICE) {
-    priceBullean = obj.offer.price < MIN_PRICE;
+    priceBullean = obj.offer.price <= MIN_PRICE;
   } else if (price.value === HIGH_PRICE) {
-    priceBullean = obj.offer.price > MAX_PRICE;
+    priceBullean = obj.offer.price >= MAX_PRICE;
   }
 
   return priceBullean;
 };
 
-const checkRooms = (obj) => {
-  let roomsBullean = obj.offer.rooms === Number(rooms.value);
-  if (rooms.value === ANY) {
-    roomsBullean = true;
-  }
+const checkRooms = (obj) => rooms.value === ANY || obj.offer.rooms === Number(rooms.value);  //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
 
-  return roomsBullean;
-};
-
-const checkGuests = (obj) => {
-  let guestsBullean = obj.offer.guests === Number(guests.value);
-  if (guests.value === ANY) {
-    guestsBullean = true;
-  }
-
-  return guestsBullean;
-};
+const checkGuests = (obj) => guests.value === ANY || obj.offer.guests === Number(guests.value);    //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
 
 const getSelectedAmenities = (checkboxs) => {
   const selectedAmenities = [];
@@ -280,6 +259,6 @@ const filterAds = (arrayAds) =>
 
 //*****Отрисовка меток при изменении фильтра */
 
-filterForm.addEventListener('change', debounce(() => showAdsMap(ads), DELAY));
+filterForm.addEventListener('change', debounce(() => showAdsMap(getAds()), DELAY));
 
-export {blockForms, unlockForms, changeAddress, resetForm, filterAds};
+export {activateForm, announcementForm, DISABL_CSS_FORM, changeAddress, resetForm, filterAds};

@@ -19,10 +19,10 @@ const insertElementFeatures = (arrayFeatures) => {
   return allFeatures;
 };
 
-const createPhotos = (arraySrc, photoElement) => {
+const createPhotos = (images, photoElement) => {   //!!Б5. Массивы названы существительными во множественном числе. js/main.js adArray arrayAds так же js/map.js js/data.js arraySrc
   const allPhoto = document.createDocumentFragment();
 
-  arraySrc.forEach((value) => {
+  images.forEach((value) => {
     const elem = photoElement.cloneNode(false);
     elem.src = value;
     allPhoto.appendChild(elem);

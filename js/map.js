@@ -1,4 +1,4 @@
-import {unlockForms, changeAddress, filterAds} from './form.js';
+import {activateForm, announcementForm, DISABL_CSS_FORM, changeAddress, filterAds} from './form.js';
 import {createAdElement} from './data.js';
 
 const AMOUNT_OF_NUMBERS = 5;
@@ -8,9 +8,9 @@ const AMOUNT_ADS = 10;
 
 //******Создание карты */
 
-const mymap = L.map('map-canvas')
+const map = L.map('map-canvas')               //!!Б3.Названия переменных, параметров, свойств и методов начинаются со строчной буквы и записываются в нотации camelCase. js/map.js mymap
   .on('load', () => {
-    unlockForms();
+    activateForm(announcementForm, DISABL_CSS_FORM);
   })
   .setView({
     lat: 35.6894,
@@ -23,7 +23,7 @@ L.tileLayer(
   {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
-).addTo(mymap);
+).addTo(map);
 
 //*****Создание маркеров */
 
@@ -72,7 +72,7 @@ const mainMarker = createSimilarMarker(
     draggable: true,
     lat: LAT_CENTER_TOKIO,
     lng: LNG_CENTER_TOKIO,
-  }).addTo(mymap);
+  }).addTo(map);
 
 mainMarker.on('move', (evt) => {
   const address = getAddress(evt.target);
@@ -89,12 +89,12 @@ changeAddress(addressDefault);
 
 //*****Похожие маркеры */
 
-const markerGroup = L.layerGroup().addTo(mymap);
+const markerGroup = L.layerGroup().addTo(map);
 
-const renderAds = (adArray) => {
+const renderAds = (adList) => {
   markerGroup.clearLayers();
 
-  adArray.forEach((obj) => {
+  adList.forEach((obj) => {
     const {lat, lng} = obj.location;
 
     const regularMarker = {
@@ -112,9 +112,9 @@ const renderAds = (adArray) => {
   });
 };
 
-const showAdsMap = (adArray) => {
-  const filteredAds = filterAds(adArray);
+const showAdsMap = (adList) => {
+  const filteredAds = filterAds(adList);
   renderAds(filteredAds.slice(0, AMOUNT_ADS));
 };
 
-export {createSimilarMarker, addMarkerToGroup, mymap, renderAds, resetMainMarker, addressDefault, showAdsMap};
+export {createSimilarMarker, addMarkerToGroup, renderAds, resetMainMarker, addressDefault, showAdsMap};
