@@ -13,7 +13,6 @@ const requestAds = (onSuccess, onError) => {
       }
     }).then((ads) => {
       onSuccess(ads);
-      return ads;
     }).catch(() => {
       onError();
     });
@@ -24,19 +23,16 @@ const requestAds = (onSuccess, onError) => {
 const sendAnnouncementAd = (data, onSuccess, onError) => {
   fetch(URL_POST, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-    mode: 'no-cors',
     body: data,
   }).then((response) => {
     if (response.ok) {
       onSuccess();
+
     } else {
       throw new Error();
     }
   })
-    .catch(onError());
+    .catch(() => onError());
 };
 
 export {requestAds, sendAnnouncementAd};

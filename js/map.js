@@ -1,5 +1,8 @@
-import {activateForm, announcementForm, DISABL_CSS_FORM, changeAddress, filterAds} from './form.js';
+import {activateForm, announcementForm, DISABL_CSS_FORM, changeAddress, filterAds, filterForm} from './form.js';
 import {createAdElement} from './data.js';
+import {showDialog, messageError} from './dialog.js';
+import {fillAds} from './data.js';
+import {requestAds} from './api.js';
 
 const AMOUNT_OF_NUMBERS = 5;
 const LAT_CENTER_TOKIO = 35.6894;
@@ -8,15 +11,7 @@ const AMOUNT_ADS = 10;
 
 //******Создание карты */
 
-const map = L.map('map-canvas')               //!!Б3.Названия переменных, параметров, свойств и методов начинаются со строчной буквы и записываются в нотации camelCase. js/map.js mymap
-  .on('load', () => {
-    activateForm(announcementForm, DISABL_CSS_FORM);
-  })
-  .setView({
-    lat: 35.6894,
-    lng: 139.692,
-  }, 10);
-
+const map = L.map('map-canvas');
 
 L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -24,6 +19,7 @@ L.tileLayer(
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
   },
 ).addTo(map);
+
 
 //*****Создание маркеров */
 
@@ -116,5 +112,24 @@ const showAdsMap = (adList) => {
   const filteredAds = filterAds(adList);
   renderAds(filteredAds.slice(0, AMOUNT_ADS));
 };
+
+const onErrorAdRequest = () => {
+  showDialog(messageError);
+};
+
+const onSuccessfulAdRequest = (adList) => {
+  fillAds(adList);
+  showAdsMap(adList);
+  activateForm(filterForm, DISABL_CSS_FORM);
+};
+
+map.on('load', () => {
+  requestAds(onSuccessfulAdRequest, onErrorAdRequest);
+  activateForm(announcementForm, DISABL_CSS_FORM);
+})
+  .setView({
+    lat: 35.6894,
+    lng: 139.692,
+  }, 10);
 
 export {createSimilarMarker, addMarkerToGroup, renderAds, resetMainMarker, addressDefault, showAdsMap};

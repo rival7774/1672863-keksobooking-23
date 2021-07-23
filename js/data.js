@@ -19,7 +19,7 @@ const insertElementFeatures = (arrayFeatures) => {
   return allFeatures;
 };
 
-const createPhotos = (images, photoElement) => {   //!!Б5. Массивы названы существительными во множественном числе. js/main.js adArray arrayAds так же js/map.js js/data.js arraySrc
+const createPhotos = (images, photoElement) => {
   const allPhoto = document.createDocumentFragment();
 
   images.forEach((value) => {
@@ -122,4 +122,12 @@ const createAdElement = (obj) => {
   return element;
 };
 
-export {createAdElement};
+let ads = [];
+
+const fillAds = (adList) => {
+  ads = adList;
+};
+
+const getAds = () => ads;
+
+export {createAdElement, getAds, fillAds};

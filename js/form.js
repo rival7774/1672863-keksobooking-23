@@ -2,7 +2,7 @@ import {sendAnnouncementAd} from './api.js';
 import {resetMainMarker, addressDefault, showAdsMap} from './map.js';
 import {elementError, elementSuccess, showDialog} from './dialog.js';
 import {debounce} from './utils/debounce.js';
-import {getAds} from './main.js';
+import {getAds} from './data.js';
 
 const announcementForm = document.querySelector('.ad-form');
 const filterForm = document.querySelector('.map__filters');
@@ -33,7 +33,7 @@ const DELAY = 500;
 
 //*****Блокировка форм и филдсетов */
 
-const blockForm = (form, cssClass) => {   //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
+const blockForm = (form, cssClass) => {
   form.classList.add(cssClass);
 };
 
@@ -51,16 +51,10 @@ blockForms();
 
 //*******Валидация заголовка и цены за ночь */
 
-const isMinValue = (value, minVal) => {  //!!Б2. При выполнении кода не возникает необработанных ошибок. некорректно реализована валидация заголовка - "введено 100 удалите 0"
-  if (value >= 0) {
-    return value >= minVal;
-  }
+const isMinValue = (value, minVal) => value >= minVal;
+const isMaxValue = (value, maxVal) => value <= maxVal;
 
-  return value > minVal;
-};
-const isMaxValue = (value, maxVal) =>  value <= maxVal;  //!!Б2. При выполнении кода не возникает необработанных ошибок. некорректно реализована валидация заголовка - "введено 100 удалите 0"
-
-const onFormInput = (evt) => {  //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
+const onFormInput = (evt) => {
   const target = evt.target;
   const validities = [];
 
@@ -85,8 +79,8 @@ formTitle.addEventListener('input', onFormInput);
 
 let minValuePrice = Number(roomTypeOption);
 
-const onPriceinput = (evt) => {    //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
-  const target = evt.target;
+const onPriceinput = () => {
+  const target = formPrice;
   const targetValue = Number(target.value);
   const validities = [];
 
@@ -111,7 +105,7 @@ formPrice.addEventListener('input', onPriceinput);
 
 //********Синхронизация количества комнат с количеством мест */
 
-const onGuestsChange = () => {    //!!!Б6.Название функции или метода содержит глагол. js/form.js disabledForm validityTitle
+const onRoomsChange = () => {
   const roomValue = Number(numberOfRooms.value);
 
   [...numberOfGuests.options].forEach((elem) => {
@@ -129,16 +123,16 @@ const onGuestsChange = () => {    //!!!Б6.Название функции ил�
   numberOfGuests.value = numberOfRooms.value;
 };
 
-onGuestsChange();
+onRoomsChange();
 
-numberOfRooms.addEventListener('change', onGuestsChange);
+numberOfRooms.addEventListener('change', onRoomsChange);
 
 //*******Влияние типа желья на минимальную цену за ночь */
 
 const resetPrice = () => {
   formPrice.placeholder = roomTypeOption;
   formPrice.min = roomTypeOption;
-  minValuePrice = roomTypeOption;  //!!Б2.При выполнении кода не возникает необработанных ошибок. при сбросе плейсхолдер не соответствует минимальной цене - ломается валидация
+  minValuePrice = roomTypeOption;
 };
 
 resetPrice();
@@ -148,6 +142,7 @@ roomType.addEventListener('change', () => {
   formPrice.min = valueData;
   formPrice.placeholder = valueData;
   minValuePrice = valueData;
+  onPriceinput();
 });
 
 //********Синхронизация времени заезда и выезда */
@@ -167,17 +162,19 @@ const changeAddress = (stringAddress) => {
 
 //*****Сброс форм */
 
-const resetForm = (evt) => {
-  if (evt) {
-    evt.preventDefault();
-  }
+const resetForm = () => {
   filterForm.reset();
   announcementForm.reset();
   resetMainMarker();
   changeAddress(addressDefault);
   resetPrice();
-  onGuestsChange();
+  onRoomsChange();
   showAdsMap(getAds());
+};
+
+const onFormReset = (evt) => {
+  evt.preventDefault();
+  resetForm();
 };
 
 //******Отправка формы */
@@ -200,7 +197,7 @@ announcementForm.addEventListener('submit', (evt) => {
 
 //*****Событие кнопки резет */
 
-buttonReset.addEventListener('click', resetForm);
+buttonReset.addEventListener('click', onFormReset);
 
 //*****Фильтрация объявлений */
 
@@ -210,14 +207,14 @@ const rooms = filterForm.querySelector('#housing-rooms');
 const guests = filterForm.querySelector('#housing-guests');
 const filterCheckbox = filterForm.querySelectorAll('.map__checkbox');
 
-const checkType = (obj) => type.value === ANY || obj.offer.type === type.value;  //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
+const checkType = (obj) => type.value === ANY || obj.offer.type === type.value;
 
 const checkPrice = (obj) => {
   let priceBullean = false;
   if (price.value === ANY) {
     priceBullean = true;
   } else if (price.value === MIDDLE_PRICE) {
-    priceBullean = obj.offer.price >= MIN_PRICE && obj.offer.price <= MAX_PRICE;  //!!Б1. Код соответствует техническому заданию проекта. form.js checkPrice границы диапазонов не попадают в условия (в checkPrice проверки делают <1000 и >1000, а 1000 между ними «проваливается»)
+    priceBullean = obj.offer.price >= MIN_PRICE && obj.offer.price <= MAX_PRICE;
   } else if (price.value === LOW_PRICE) {
     priceBullean = obj.offer.price <= MIN_PRICE;
   } else if (price.value === HIGH_PRICE) {
@@ -227,10 +224,9 @@ const checkPrice = (obj) => {
   return priceBullean;
 };
 
-const checkRooms = (obj) => rooms.value === ANY || obj.offer.rooms === Number(rooms.value);  //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
+const checkRooms = (obj) => rooms.value === ANY || obj.offer.rooms === Number(rooms.value);
 
-const checkGuests = (obj) => guests.value === ANY || obj.offer.guests === Number(guests.value);    //!!Д18. Условия упрощены. form.js checkType checkRooms checkGuests
-
+const checkGuests = (obj) => guests.value === ANY || obj.offer.guests === Number(guests.value);
 const getSelectedAmenities = (checkboxs) => {
   const selectedAmenities = [];
 
@@ -261,4 +257,4 @@ const filterAds = (arrayAds) =>
 
 filterForm.addEventListener('change', debounce(() => showAdsMap(getAds()), DELAY));
 
-export {activateForm, announcementForm, DISABL_CSS_FORM, changeAddress, resetForm, filterAds};
+export {activateForm, announcementForm, filterForm, DISABL_CSS_FORM, changeAddress, resetForm, filterAds};
