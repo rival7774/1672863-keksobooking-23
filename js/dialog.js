@@ -9,29 +9,30 @@ const ATTRIBUT_DATA_REQUEST = 'data-send-request';
 const ATTRIBUT_DATA_CLOSE = 'data-modal-closed';
 const TEXT_ERROR = 'Ошибка сервера, попробуйте перезагрузить страницу';
 const TEXT_BUTTON = 'Закрыть сообщение';
+let removeDialog;
 
 const showDialog = (elem, callback) => {
   const dialog = elem.cloneNode(true);
   document.body.appendChild(dialog);
 
-  function onModalKeydown(evt) {
+  const onModalKeydown = (evt) => {
     if (evt.key === 'Escape') {
       removeDialog(evt);
     }
-  }
+  };
 
-  function removeDialog(evt) {  //!!Нужно для возможности доступа
+  removeDialog = (evt) => {
     dialog.remove();
     document.removeEventListener('keydown', onModalKeydown);
 
     if (evt.target.hasAttribute(ATTRIBUT_DATA_REQUEST)) {
       callback();
     }
-  }
+  };
 
-  function onModalClick(evt) {
+  const onModalClick = (evt) => {
     removeDialog(evt);
-  }
+  };
 
   document.addEventListener('keydown', onModalKeydown);
 
