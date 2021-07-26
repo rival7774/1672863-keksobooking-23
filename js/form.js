@@ -257,4 +257,63 @@ const filterAds = (arrayAds) =>
 
 filterForm.addEventListener('change', debounce(() => showAdsMap(getAds()), DELAY));
 
+//*****Аватар */
+
+const inputAvatar = announcementForm.querySelector('.ad-form-header__input');
+const inputRoom = announcementForm.querySelector('.ad-form__input');
+const previewAvatar = announcementForm.querySelector('.ad-form-header__preview-avatar');
+const roomPreview = announcementForm.querySelector('.ad-form__photo');
+
+const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+
+const onInputAvatarChange = (preview) => function() {
+  const file = this.files[0];
+  const nameFile = file.name.toLowerCase();
+
+  const aaa = FILE_TYPES.some((elem) => nameFile.endsWith(elem)); //!!Не знаю как назвать переменную
+
+  if (aaa) {
+    const reader = new FileReader();
+
+    reader.addEventListener('load', () => {
+      preview.src = reader.result;
+    });
+
+    reader.readAsDataURL(file);
+  }
+};
+
+inputAvatar.addEventListener('change', onInputAvatarChange(previewAvatar));
+
+function setAttributes(el, attrs) {
+  for(const key in attrs) {
+    el.setAttribute(key, attrs[key]);
+  }
+}
+
+const createImg = (attrs) => {
+  const img = document.createElement('img');
+  setAttributes(img, attrs);
+  return img;
+};
+
+inputRoom.addEventListener('change', () => {
+  const roomFile = inputRoom.files;
+
+  const files = [...roomFile].filter((elemFile) => FILE_TYPES.some((elem) => elemFile.name.toLowerCase().endsWith(elem)));
+
+  if (files.length > 0) {
+    files.forEach((elem) => {
+      const reader = new FileReader();
+
+      reader.addEventListener('load', () => {
+        const img = createImg({ 'width': '500px', 'height': '500px', 'src': reader.result });
+        roomPreview.appendChild(img);
+      });
+
+      reader.readAsDataURL(elem);
+    });
+  }
+});
+
 export {activateForm, announcementForm, filterForm, DISABL_CSS_FORM, changeAddress, resetForm, filterAds};
