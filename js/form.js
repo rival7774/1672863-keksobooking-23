@@ -15,6 +15,10 @@ const checkInTime = document.querySelector('#timein');
 const checkOutTime = document.querySelector('#timeout');
 const address = document.querySelector('#address');
 const buttonReset = document.querySelector('.ad-form__reset');
+const inputAvatar = announcementForm.querySelector('.ad-form-header__input');
+const inputRoom = announcementForm.querySelector('.ad-form__input');
+const previewAvatar = announcementForm.querySelector('.ad-form-header__preview-avatar');
+const roomPreview = announcementForm.querySelector('.ad-form__photo');
 
 const roomTypeOption = Number(roomType.options[roomType.selectedIndex].dataset.minPrice);
 
@@ -30,6 +34,7 @@ const HIGH_PRICE = 'high';
 const MIN_PRICE = 10000;
 const MAX_PRICE = 50000;
 const DELAY = 500;
+const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
 
 //*****Блокировка форм и филдсетов */
 
@@ -160,6 +165,12 @@ const changeAddress = (stringAddress) => {
   address.value = stringAddress;
 };
 
+//*****Сброс превью */
+
+const resetPreview = (previewName) => {
+  previewName.innerHTML = '';
+};
+
 //*****Сброс форм */
 
 const resetForm = () => {
@@ -170,6 +181,8 @@ const resetForm = () => {
   resetPrice();
   onRoomsChange();
   showAdsMap(getAds());
+  resetPreview(previewAvatar);
+  resetPreview(roomPreview);
 };
 
 const onFormReset = (evt) => {
@@ -259,13 +272,6 @@ filterForm.addEventListener('change', debounce(() => showAdsMap(getAds()), DELAY
 
 //*****Аватар */
 
-const inputAvatar = announcementForm.querySelector('.ad-form-header__input');
-const inputRoom = announcementForm.querySelector('.ad-form__input');
-const previewAvatar = announcementForm.querySelector('.ad-form-header__preview-avatar');
-const roomPreview = announcementForm.querySelector('.ad-form__photo');
-
-const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
-
 const onInputAvatarChange = (preview) => function() {
   const file = this.files[0];
   const nameFile = file.name.toLowerCase();
@@ -299,15 +305,22 @@ const createImg = (attrs) => {
 
 inputRoom.addEventListener('change', () => {
   const roomFile = inputRoom.files;
+  let counter = 4;
 
   const files = [...roomFile].filter((elemFile) => FILE_TYPES.some((elem) => elemFile.name.toLowerCase().endsWith(elem)));
 
   if (files.length > 0) {
-    files.forEach((elem) => {
+    if (roomPreview.children.length <= 4) {
+      counter -= roomPreview.children.length;
+    } else {
+      counter = 0;
+    }
+
+    files.slice(0, counter).forEach((elem) => {
       const reader = new FileReader();
 
       reader.addEventListener('load', () => {
-        const img = createImg({ 'width': '500px', 'height': '500px', 'src': reader.result });
+        const img = createImg({ 'alt': 'Фотография квартиры', 'width': '70px', 'height': '70px', 'src': reader.result });
         roomPreview.appendChild(img);
       });
 
