@@ -35,6 +35,7 @@ const MIN_PRICE = 10000;
 const MAX_PRICE = 50000;
 const DELAY = 500;
 const FILE_TYPES = ['gif', 'jpg', 'jpeg', 'png'];
+const MAX_FOTO = 4
 
 //*****Блокировка форм и филдсетов */
 
@@ -305,12 +306,12 @@ const createImg = (attrs) => {
 
 inputRoom.addEventListener('change', () => {
   const roomFile = inputRoom.files;
-  let counter = 4;
+  let counter = MAX_FOTO;
 
   const files = [...roomFile].filter((elemFile) => FILE_TYPES.some((elem) => elemFile.name.toLowerCase().endsWith(elem)));
 
   if (files.length > 0) {
-    if (roomPreview.children.length <= 4) {
+    if (roomPreview.children.length <= MAX_FOTO) {
       counter -= roomPreview.children.length;
     } else {
       counter = 0;
